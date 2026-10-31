@@ -1,0 +1,11 @@
+export type Principle = 'addition' | 'multiplication' | 'pigeonhole';
+export interface ChallengeDefinition {
+  id: string;
+  principle: Principle;
+  title: string;
+}
+export const sectors = [
+  { id: 'addition', number: '01', symbol: '+', title: 'Princípio da Adição', name: 'Central de escolhas', description: 'Um caminho ou outro? Descubra como contar alternativas.' },
+  { id: 'multiplication', number: '02', symbol: '×', title: 'Princípio da Multiplicação', name: 'Linha de montagem', description: 'Uma escolha depois da outra. Explore as combinações possíveis.' },
+  { id: 'pigeonhole', number: '03', symbol: '▦', title: 'Princípio das Casas de Pombo', name: 'Depósito de possibilidades', description: 'Objetos e espaços: o que podemos garantir ao distribuí-los?' },
+] as const satisfies readonly { id: Principle; number: string; symbol: string; title: string; name: string; description: string }[];
