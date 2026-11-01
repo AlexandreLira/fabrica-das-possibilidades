@@ -5,6 +5,7 @@ import { useRoute } from './navigation';
 import { Home } from '../screens/Home';
 import { Instructions } from '../screens/Instructions';
 import { Sectors } from '../screens/Sectors';
+import { AdditionChallenge } from '../screens/AdditionChallenge';
 import { UpdateNotice } from './UpdateNotice';
 export function App() {
   const route = useRoute(); const previousRoute = useRef(route);
@@ -23,7 +24,7 @@ export function App() {
         <span>Som {sound ? 'ligado' : 'desligado'}</span>
       </button>
     </header>
-    <main id="main" tabIndex={-1}>{route === 'home' ? <Home /> : route === 'instructions' ? <Instructions /> : <Sectors />}</main>
+    <main id="main" tabIndex={-1}>{route === 'home' ? <Home /> : route === 'instructions' ? <Instructions /> : route === 'sectors' ? <Sectors /> : <AdditionChallenge />}</main>
     <footer className="app-footer"><span aria-hidden="true">◆</span> FEITO DE IDEIAS E POSSIBILIDADES <span aria-hidden="true">◆</span></footer>
     {import.meta.env.PROD && <UpdateNotice />}
   </div>;

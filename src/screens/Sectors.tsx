@@ -11,7 +11,9 @@ export function Sectors() {
       {sectors.map((sector) => <Panel key={sector.id} className={`sector sector-${sector.id}`}>
         <div className="sector-top"><span className="sector-symbol" aria-hidden="true">{sector.symbol}</span><div><span className="eyebrow">Setor {sector.number}</span><p className="sector-name">{sector.name}</p></div></div>
         <h2>{sector.title}</h2><p>{sector.description}</p>
-        <span className="coming-soon"><span aria-hidden="true">▧</span> Desafios em preparação</span>
+        {sector.id === 'addition'
+          ? <a className="pixel-button primary sector-play" href="#/desafios/adicao-1">Jogar fase teste <span aria-hidden="true">→</span></a>
+          : <span className="coming-soon"><span aria-hidden="true">▧</span> Desafios em preparação</span>}
       </Panel>)}
     </div>
     <GamePreview />
