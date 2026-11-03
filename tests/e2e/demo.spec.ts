@@ -111,3 +111,42 @@ test('mantém Multiplicação e Casas de Pombo jogáveis sem Phaser', async ({ p
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('link', { name: 'Ver resumo final' })).toBeVisible();
 });
+
+for (const width of [320, 390]) {
+  test(`mantém todas as fases sem rolagem horizontal em ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const route of ['adicao-1', 'multiplicacao-1', 'casas-de-pombo-1']) {
+      await page.goto(`/#/desafios/${route}`);
+      await expect(page.locator('h1')).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+    await page.goto('/#/conclusao');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+}
+
+test('conclui Multiplicação e Casas de Pombo usando controles de teclado', async ({ page }) => {
+  await page.goto('/#/desafios/multiplicacao-1');
+  const body = page.getByRole('button', { name: 'Carcaça ciano' });
+  await body.focus();
+  await page.keyboard.press('Enter');
+  const antenna = page.getByRole('button', { name: 'Antena de haste' });
+  await antenna.focus();
+  await page.keyboard.press('Enter');
+  await page.getByRole('radio', { name: '6' }).focus();
+  await page.keyboard.press('Space');
+  await page.getByRole('button', { name: 'Confirmar' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('link', { name: 'Continuar para Casas de Pombo' })).toBeVisible();
+
+  await page.goto('/#/desafios/casas-de-pombo-1');
+  const firstBox = page.getByRole('button', { name: 'Colocar peça na caixa 1' });
+  await firstBox.focus();
+  for (let item = 0; item < 7; item += 1) await page.keyboard.press('Enter');
+  await page.getByRole('radio', { name: '3' }).focus();
+  await page.keyboard.press('Space');
+  await page.getByRole('button', { name: 'Confirmar' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('link', { name: 'Ver resumo final' })).toBeVisible();
+});
