@@ -57,7 +57,7 @@ para evitar sobreposição; silenciar interrompe o som ativo. Falha ou bloqueio 
 - `npm run typecheck`: passou.
 - `npm run test:run`: 62 testes passaram em 8 arquivos.
 - `npm run build`: passou; PWA gerou service worker com 17 recursos em precache.
-- `npm run test:e2e`: 44 testes passaram em Android/Chromium e iPhone/WebKit.
+- `npm run test:e2e`: 46 testes passaram em Android/Chromium e iPhone/WebKit.
 - Inspeção visual: Adição, Multiplicação e Casas de Pombo foram capturadas no
   perfil iPhone 13; hierarquia, contraste, áreas de toque e largura estavam
   coerentes, sem transbordamento horizontal.

@@ -60,18 +60,25 @@ export function PigeonholeChallenge() {
         <strong aria-live="polite">{state.remaining} {state.remaining === 1 ? 'peça restante' : 'peças restantes'}</strong>
       </div>
       <div className="box-grid">
-        {state.counts.map((count, index) => <button
-          type="button"
-          key={index}
-          onClick={() => placeItem(index as BoxIndex)}
-          disabled={state.remaining === 0 || state.completed}
-          aria-label={`Colocar peça na caixa ${index + 1}`}
-        >
-          <span>Caixa {index + 1}</span>
-          <b>{'■ '.repeat(count).trim() || 'vazia'}</b>
-          <strong>{count} {count === 1 ? 'peça' : 'peças'}</strong>
-        </button>)}
+        {state.counts.map((count, index) => {
+          const countLabel = `${count} ${count === 1 ? 'peça' : 'peças'}`;
+          const actionLabel = state.remaining === 0 ? 'Distribuição concluída' : `Colocar peça na caixa ${index + 1}`;
+          return <button
+            type="button"
+            key={index}
+            onClick={() => placeItem(index as BoxIndex)}
+            disabled={state.remaining === 0 || state.completed}
+            aria-label={`Caixa ${index + 1}: ${countLabel}. ${actionLabel}`}
+          >
+            <span>Caixa {index + 1}</span>
+            <b>{'■ '.repeat(count).trim() || 'vazia'}</b>
+            <strong>{countLabel}</strong>
+          </button>;
+        })}
       </div>
+      <p className="distribution-summary" aria-live="polite" aria-atomic="true">
+        Distribuição atual: {state.counts.map((count, index) => `caixa ${index + 1} com ${count} ${count === 1 ? 'peça' : 'peças'}`).join('; ')}.
+      </p>
       <button
         className="reset-distribution"
         type="button"

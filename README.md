@@ -167,7 +167,7 @@ Fontes oficiais: [Vite](https://vite.dev/guide/),
 
 - Lint, TypeScript e build: passaram.
 - Vitest: **62 testes passaram** em 8 arquivos.
-- Playwright: **44 testes passaram** nos perfis Android/Chromium e iPhone/WebKit,
+- Playwright: **46 testes passaram** nos perfis Android/Chromium e iPhone/WebKit,
   incluindo as três fases, sequência completa, offline, fallback, teclado, som
   desligado, movimento reduzido, canvas único e larguras 320/390 px.
 - Build PWA: 17 recursos no precache; permanece o aviso conhecido do chunk Phaser.

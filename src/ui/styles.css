@@ -183,6 +183,7 @@ h2 { font-size: 18px; font-weight: 800; line-height: 1.35; }
 .box-grid button span { display: block; margin-bottom: 9px; font-size: 10px; font-weight: 800; }
 .box-grid button b { display: block; min-height: 28px; color: #f4c955; font: 10px monospace; line-height: 1.4; }
 .box-grid button strong { display: block; margin-top: 7px; font-size: 9px; }
+.distribution-summary { margin: 12px 0 0; color: #d3e0e2; font-size: 11px; line-height: 1.5; }
 .reset-distribution { width: 100%; min-height: 48px; margin-top: 12px; border: 2px solid #617783; background: #112938; color: #f7f2e5; font-size: 11px; font-weight: 800; }
 .limit-distribution { margin: 18px 0; padding: 16px; border-left: 4px solid #cbb7f1; background: #292f4b; }
 .limit-distribution strong { color: #e6dafa; }

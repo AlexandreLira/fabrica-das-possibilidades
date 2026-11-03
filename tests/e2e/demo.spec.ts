@@ -72,6 +72,15 @@ test('distribui sete peças, reinicia e conclui Casas de Pombo', async ({ page }
   await expect(page.getByText(/3–2–2 mostra que não podemos garantir 4/)).toBeVisible();
 });
 
+test('comunica a distribuição atual nos controles acessíveis das caixas', async ({ page }) => {
+  await page.goto('/#/desafios/casas-de-pombo-1');
+  const firstBox = page.getByRole('button', { name: /Caixa 1: 0 peças.*Colocar peça na caixa 1/ });
+  await expect(firstBox).toBeVisible();
+  await firstBox.click();
+  await expect(page.getByRole('button', { name: /Caixa 1: 1 peça.*Colocar peça na caixa 1/ })).toBeVisible();
+  await expect(page.getByText('Distribuição atual: caixa 1 com 1 peça; caixa 2 com 0 peças; caixa 3 com 0 peças.')).toBeVisible();
+});
+
 test('conclui a sequência e mostra o resumo dos três princípios', async ({ page }) => {
   await page.goto('/#/desafios/adicao-1');
   await completeAddition(page);
