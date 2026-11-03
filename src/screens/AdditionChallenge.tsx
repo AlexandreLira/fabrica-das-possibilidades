@@ -11,6 +11,7 @@ import { additionChallengeInitialState, reduceAdditionChallenge } from './additi
 export function AdditionChallenge() {
   const [state, dispatch] = useReducer(reduceAdditionChallenge, additionChallengeInitialState);
   const [bridge] = useState(createGameBridge);
+  const [gameRun, setGameRun] = useState(0);
   const completeChallenge = useStore(appStore, (store) => store.completeChallenge);
   const routesReady = state.revealedRoutes.length === additionRouteChallenge.groups.length;
 
@@ -31,7 +32,7 @@ export function AdditionChallenge() {
   return <>
     <ChallengeIntro challenge={additionRouteChallenge} />
 
-    <ChallengeGame bridge={bridge} revealedRoutes={state.revealedRoutes} completed={state.completed} />
+    <ChallengeGame key={gameRun} kind="addition" bridge={bridge} revealedRoutes={state.revealedRoutes} completed={state.completed} />
 
     <section className="challenge-routes" aria-labelledby="route-heading">
       <h2 id="route-heading">Examine as rotas</h2>
@@ -69,7 +70,7 @@ export function AdditionChallenge() {
     {state.completed && <CompletionActions
       nextHref="#/desafios/multiplicacao-1"
       nextLabel="Continuar para Multiplicação"
-      onReplay={() => dispatch({ type: 'reset' })}
+      onReplay={() => { dispatch({ type: 'reset' }); setGameRun((run) => run + 1); }}
     />}
   </>;
 }

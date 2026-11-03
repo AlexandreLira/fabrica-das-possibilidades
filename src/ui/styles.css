@@ -116,6 +116,14 @@ h2 { font-size: 18px; font-weight: 800; line-height: 1.35; }
 .static-conveyor i { width: 7px; height: 7px; background: #89a3a4; border-radius: 50%; }
 .static-conveyor span { position: absolute; left: 7px; color: #d7a753; font-size: 19px; }
 .challenge-static.is-complete .static-conveyor span { left: auto; right: 7px; color: #f4c955; }
+.multiplication-static { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 45px; }
+.static-antenna { height: 38px; color: #f4c955; font: 900 34px monospace; }
+.static-robot { width: 68px; height: 58px; display: grid; place-items: center; border: 4px solid #081c26; color: #112938; font: 28px monospace; }
+.pigeonhole-static { grid-template-columns: repeat(3, 1fr); align-items: center; gap: 8px; padding: 36px 10px 18px; }
+.static-box { min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 4px; border: 3px solid #8c6b3d; background: #5b482e; color: #fff1c7; font: 8px monospace; }
+.static-box b { color: #f4c955; font-size: 9px; line-height: 1.4; text-align: center; }
+.static-box strong { color: #f7f2e5; font-size: 20px; }
+.pigeonhole-static.is-complete .static-box { border-color: #71dfda; }
 .challenge-visual-status { min-height: 16px; margin: 8px 2px 0; color: #b9cdd1; font-size: 10px; }
 .challenge-routes h2 { margin: 0 0 12px; }
 .route-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

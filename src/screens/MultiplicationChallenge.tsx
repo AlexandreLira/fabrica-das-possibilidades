@@ -1,7 +1,9 @@
-import { useReducer } from 'react';
+import { useReducer, useState } from 'react';
 import { useStore } from 'zustand';
 import { multiplicationRobotChallenge } from '../content/challenges';
 import { playFeedback } from '../audio/effects';
+import { ChallengeGame } from '../game/ChallengeGame';
+import { createGameBridge } from '../game/bridge/events';
 import { appStore } from '../state/store';
 import { AnswerPanel, ChallengeIntro, CompletionActions } from './ChallengeComponents';
 import {
@@ -11,6 +13,8 @@ import {
 
 export function MultiplicationChallenge() {
   const [state, dispatch] = useReducer(reduceMultiplicationChallenge, multiplicationChallengeInitialState);
+  const [bridge] = useState(createGameBridge);
+  const [gameRun, setGameRun] = useState(0);
   const completeChallenge = useStore(appStore, (store) => store.completeChallenge);
   const ready = state.bodyId !== null && state.antennaId !== null;
   const body = multiplicationRobotChallenge.bodyOptions.find((option) => option.id === state.bodyId);
@@ -20,12 +24,21 @@ export function MultiplicationChallenge() {
     if (state.selectedAnswer === null) return;
     const correct = state.selectedAnswer === multiplicationRobotChallenge.correctAnswer;
     dispatch({ type: 'confirm-answer' });
+    bridge.emit('challenge:answer-evaluated', { answer: state.selectedAnswer, correct });
     if (correct) completeChallenge(multiplicationRobotChallenge.id);
     playFeedback(correct ? 'success' : 'error');
   };
 
   return <>
     <ChallengeIntro challenge={multiplicationRobotChallenge} />
+    <ChallengeGame
+      key={gameRun}
+      kind="multiplication"
+      bridge={bridge}
+      bodyId={state.bodyId}
+      antennaId={state.antennaId}
+      completed={state.completed}
+    />
     <section className="robot-workbench" aria-labelledby="robot-workbench-heading">
       <h2 id="robot-workbench-heading">Escolha as peças</h2>
       <div className="robot-preview" aria-live="polite">
@@ -40,7 +53,7 @@ export function MultiplicationChallenge() {
           type="button"
           aria-pressed={state.bodyId === option.id}
           className={state.bodyId === option.id ? 'is-selected' : ''}
-          onClick={() => { dispatch({ type: 'select-body', bodyId: option.id }); playFeedback('reveal'); }}
+          onClick={() => { dispatch({ type: 'select-body', bodyId: option.id }); playFeedback('select'); }}
         ><i style={{ background: option.color }} aria-hidden="true" />{option.name}</button>)}
       </fieldset>
       <fieldset className="part-options" disabled={state.completed}>
@@ -50,7 +63,7 @@ export function MultiplicationChallenge() {
           type="button"
           aria-pressed={state.antennaId === option.id}
           className={state.antennaId === option.id ? 'is-selected' : ''}
-          onClick={() => { dispatch({ type: 'select-antenna', antennaId: option.id }); playFeedback('reveal'); }}
+          onClick={() => { dispatch({ type: 'select-antenna', antennaId: option.id }); playFeedback('select'); }}
         ><b aria-hidden="true">{option.symbol}</b>{option.name}</button>)}
       </fieldset>
     </section>
@@ -81,7 +94,7 @@ export function MultiplicationChallenge() {
       <CompletionActions
         nextHref="#/desafios/casas-de-pombo-1"
         nextLabel="Continuar para Casas de Pombo"
-        onReplay={() => dispatch({ type: 'reset' })}
+        onReplay={() => { dispatch({ type: 'reset' }); setGameRun((run) => run + 1); }}
       />
     </>}
   </>;

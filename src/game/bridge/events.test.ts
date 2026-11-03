@@ -32,3 +32,24 @@ it('emite eventos da fase apenas enquanto os listeners estão inscritos', () => 
   expect(answers).toEqual([{ answer: 12, correct: false }]);
   expect(completions).toBe(1);
 });
+
+it('tipa e remove os eventos visuais de montagem e distribuição', () => {
+  const bridge = createGameBridge();
+  const robots: string[] = [];
+  const distributions: string[] = [];
+  let resets = 0;
+
+  const offRobot = bridge.on('challenge:robot-configured', ({ bodyId, antennaId }) => robots.push(`${bodyId}:${antennaId}`));
+  const offItem = bridge.on('challenge:item-placed', ({ boxIndex, counts, remaining }) => distributions.push(`${boxIndex}:${counts.join('-')}:${remaining}`));
+  const offReset = bridge.on('challenge:distribution-reset', () => { resets += 1; });
+
+  bridge.emit('challenge:robot-configured', { bodyId: 'ciano', antennaId: 'haste' });
+  bridge.emit('challenge:item-placed', { boxIndex: 1, counts: [3, 2, 2], remaining: 0 });
+  bridge.emit('challenge:distribution-reset', undefined);
+  offRobot(); offItem(); offReset();
+  bridge.emit('challenge:robot-configured', { bodyId: 'coral', antennaId: 'dupla' });
+
+  expect(robots).toEqual(['ciano:haste']);
+  expect(distributions).toEqual(['1:3-2-2:0']);
+  expect(resets).toBe(1);
+});

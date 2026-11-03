@@ -88,3 +88,26 @@ test('conclui a sequência e mostra o resumo dos três princípios', async ({ pa
   await expect(page.getByText('E entre etapas independentes')).toBeVisible();
   await expect(page.getByText('ocupação mínima garantida')).toBeVisible();
 });
+
+test('mantém um único canvas ao alternar entre as três fases', async ({ page }) => {
+  for (const route of ['adicao-1', 'multiplicacao-1', 'casas-de-pombo-1']) {
+    await page.goto(`/#/desafios/${route}`);
+    await expect(page.locator('.challenge-game canvas')).toHaveCount(1);
+  }
+});
+
+test('mantém Multiplicação e Casas de Pombo jogáveis sem Phaser', async ({ page }) => {
+  await page.route(/.*\/assets\/.*(?:challengeEngine|phaser).*\.js$/, (route) => route.abort());
+  await page.goto('/#/desafios/multiplicacao-1');
+  await expect(page.getByText('A animação da fábrica está indisponível.')).toBeVisible();
+  await expect(page.locator('.challenge-static')).toBeVisible();
+  await completeMultiplication(page);
+  await expect(page.getByRole('link', { name: 'Continuar para Casas de Pombo' })).toBeVisible();
+
+  await page.goto('/#/desafios/casas-de-pombo-1');
+  await expect(page.getByText('A animação da fábrica está indisponível.')).toBeVisible();
+  await distribute322(page);
+  await page.locator('.answer-options label').filter({ hasText: '3' }).click();
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(page.getByRole('link', { name: 'Ver resumo final' })).toBeVisible();
+});

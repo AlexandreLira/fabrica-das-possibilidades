@@ -1,16 +1,22 @@
+import type { RobotAntennaId, RobotBodyId } from '../../content/challenges';
+
 export interface GameEvents {
   'scene:ready': undefined;
   'scene:failed': undefined;
   'bot:greet': { reducedMotion: boolean };
   'bot:greeted': { message: string };
   'challenge:route-revealed': { routeId: 'local' | 'express' };
+  'challenge:robot-configured': { bodyId: RobotBodyId; antennaId: RobotAntennaId };
+  'challenge:item-placed': { boxIndex: 0 | 1 | 2; counts: readonly [number, number, number]; remaining: number };
+  'challenge:distribution-reset': undefined;
   'challenge:answer-evaluated': { answer: number; correct: boolean };
   'challenge:completed': undefined;
 }
 export function createGameBridge() {
   const listeners: { [K in keyof GameEvents]: Set<(payload: GameEvents[K]) => void> } = {
     'scene:ready': new Set(), 'scene:failed': new Set(), 'bot:greet': new Set(), 'bot:greeted': new Set(),
-    'challenge:route-revealed': new Set(), 'challenge:answer-evaluated': new Set(), 'challenge:completed': new Set(),
+    'challenge:route-revealed': new Set(), 'challenge:robot-configured': new Set(), 'challenge:item-placed': new Set(),
+    'challenge:distribution-reset': new Set(), 'challenge:answer-evaluated': new Set(), 'challenge:completed': new Set(),
   };
   return {
     on<K extends keyof GameEvents>(event: K, listener: (payload: GameEvents[K]) => void) {

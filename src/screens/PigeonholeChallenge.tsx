@@ -1,7 +1,9 @@
-import { useReducer } from 'react';
+import { useReducer, useState } from 'react';
 import { useStore } from 'zustand';
 import { pigeonholeStorageChallenge } from '../content/challenges';
 import { playFeedback } from '../audio/effects';
+import { ChallengeGame } from '../game/ChallengeGame';
+import { createGameBridge } from '../game/bridge/events';
 import { appStore } from '../state/store';
 import { AnswerPanel, ChallengeIntro, CompletionActions } from './ChallengeComponents';
 import {
@@ -12,24 +14,46 @@ import {
 
 export function PigeonholeChallenge() {
   const [state, dispatch] = useReducer(reducePigeonholeChallenge, pigeonholeChallengeInitialState);
+  const [bridge] = useState(createGameBridge);
+  const [lastBoxIndex, setLastBoxIndex] = useState<BoxIndex | null>(null);
+  const [gameRun, setGameRun] = useState(0);
   const completeChallenge = useStore(appStore, (store) => store.completeChallenge);
+  const completedChallengeIds = useStore(appStore, (store) => store.completedChallengeIds);
 
   const placeItem = (boxIndex: BoxIndex) => {
     if (state.remaining === 0 || state.completed) return;
     dispatch({ type: 'place-item', boxIndex });
-    playFeedback('reveal');
+    setLastBoxIndex(boxIndex);
+    playFeedback('place');
+  };
+
+  const resetDistribution = () => {
+    dispatch({ type: 'reset-distribution' });
+    setLastBoxIndex(null);
+    bridge.emit('challenge:distribution-reset', undefined);
   };
 
   const confirmAnswer = () => {
     if (state.selectedAnswer === null) return;
     const correct = state.selectedAnswer === pigeonholeStorageChallenge.correctAnswer;
     dispatch({ type: 'confirm-answer' });
+    bridge.emit('challenge:answer-evaluated', { answer: state.selectedAnswer, correct });
     if (correct) completeChallenge(pigeonholeStorageChallenge.id);
-    playFeedback(correct ? 'success' : 'error');
+    const completesDemo = completedChallengeIds.includes('adicao-1') && completedChallengeIds.includes('multiplicacao-1');
+    playFeedback(correct ? (completesDemo ? 'complete' : 'success') : 'error');
   };
 
   return <>
     <ChallengeIntro challenge={pigeonholeStorageChallenge} />
+    <ChallengeGame
+      key={gameRun}
+      kind="pigeonhole"
+      bridge={bridge}
+      counts={state.counts}
+      remaining={state.remaining}
+      lastBoxIndex={lastBoxIndex}
+      completed={state.completed}
+    />
     <section className="storage-board" aria-labelledby="storage-heading">
       <div className="storage-heading">
         <h2 id="storage-heading">Distribua as peças</h2>
@@ -51,7 +75,7 @@ export function PigeonholeChallenge() {
       <button
         className="reset-distribution"
         type="button"
-        onClick={() => dispatch({ type: 'reset-distribution' })}
+        onClick={resetDistribution}
         disabled={state.completed || state.remaining === pigeonholeStorageChallenge.items}
       >Reiniciar distribuição</button>
     </section>
@@ -78,7 +102,11 @@ export function PigeonholeChallenge() {
       <CompletionActions
         nextHref="#/conclusao"
         nextLabel="Ver resumo final"
-        onReplay={() => dispatch({ type: 'reset' })}
+        onReplay={() => {
+          dispatch({ type: 'reset' });
+          setLastBoxIndex(null);
+          setGameRun((run) => run + 1);
+        }}
       />
     </>}
   </>;
