@@ -1,14 +1,17 @@
 import { useReducer, useState } from 'react';
+import { useStore } from 'zustand';
 import { additionRouteChallenge } from '../content/challenges';
 import { ChallengeGame } from '../game/ChallengeGame';
 import { createGameBridge } from '../game/bridge/events';
 import { playFeedback } from '../audio/effects';
-import { BotBubble, PixelButton } from '../ui/components';
+import { appStore } from '../state/store';
+import { AnswerPanel, ChallengeIntro, CompletionActions } from './ChallengeComponents';
 import { additionChallengeInitialState, reduceAdditionChallenge } from './additionChallengeState';
 
 export function AdditionChallenge() {
   const [state, dispatch] = useReducer(reduceAdditionChallenge, additionChallengeInitialState);
   const [bridge] = useState(createGameBridge);
+  const completeChallenge = useStore(appStore, (store) => store.completeChallenge);
   const routesReady = state.revealedRoutes.length === additionRouteChallenge.groups.length;
 
   const revealRoute = (routeId: 'local' | 'express') => {
@@ -21,14 +24,12 @@ export function AdditionChallenge() {
     const correct = state.selectedAnswer === additionRouteChallenge.correctAnswer;
     dispatch({ type: 'confirm-answer' });
     bridge.emit('challenge:answer-evaluated', { answer: state.selectedAnswer, correct });
+    if (correct) completeChallenge(additionRouteChallenge.id);
     playFeedback(correct ? 'success' : 'error');
   };
 
   return <>
-    <a className="back-link" href="#/setores">← Voltar ao mapa</a>
-    <span className="eyebrow page-eyebrow">{additionRouteChallenge.sectorLabel}</span>
-    <h1 tabIndex={-1}>{additionRouteChallenge.title}</h1>
-    <BotBubble>{additionRouteChallenge.introduction}</BotBubble>
+    <ChallengeIntro challenge={additionRouteChallenge} />
 
     <ChallengeGame bridge={bridge} revealedRoutes={state.revealedRoutes} completed={state.completed} />
 
@@ -52,41 +53,23 @@ export function AdditionChallenge() {
       </div>
     </section>
 
-    <section className="answer-panel" aria-labelledby="equation-heading">
-      <span className="eyebrow">Total de possibilidades</span>
-      <h2 id="equation-heading" className="challenge-equation">3 + 4 = ?</h2>
-      {!routesReady && <p className="unlock-note">Examine as duas rotas para liberar as respostas.</p>}
-      <fieldset className="answer-options" disabled={!routesReady || state.completed} aria-label="Escolha uma resposta">
-        <legend className="sr-only">Escolha uma resposta</legend>
-        {additionRouteChallenge.answers.map((answer) => <label key={answer} className={state.selectedAnswer === answer ? 'is-selected' : ''}>
-          <input
-            type="radio"
-            name="answer"
-            value={answer}
-            checked={state.selectedAnswer === answer}
-            onChange={() => dispatch({ type: 'select-answer', answer })}
-          />
-          <span>{answer}</span>
-        </label>)}
-      </fieldset>
-      <div className="challenge-actions">
-        <PixelButton
-          className="secondary"
-          onClick={() => dispatch({ type: 'show-hint' })}
-          disabled={state.completed}
-          aria-controls="addition-challenge-hint"
-          aria-expanded={state.hintVisible && !state.completed}
-        >Ver dica <span aria-hidden="true">?</span></PixelButton>
-        <PixelButton className="primary" onClick={confirmAnswer} disabled={state.selectedAnswer === null || state.completed}>Confirmar <span aria-hidden="true">→</span></PixelButton>
-      </div>
-    </section>
-
-    <aside id="addition-challenge-hint" className="challenge-hint" aria-live="polite">
-      {state.hintVisible && !state.completed && <><span className="eyebrow">Dica do B.O.T.</span><p>{additionRouteChallenge.hint}</p></>}
-    </aside>
-    <div className={`challenge-feedback ${state.completed ? 'is-success' : ''}`} role="status" aria-live="polite" aria-atomic="true">
-      {state.feedback && <p>{state.feedback}</p>}
-    </div>
-    {state.completed && <PixelButton className="primary w-full" onClick={() => { window.location.hash = '/setores'; }}>Continuar <span aria-hidden="true">→</span></PixelButton>}
+    <AnswerPanel
+      challenge={additionRouteChallenge}
+      ready={routesReady}
+      readyMessage="Examine as duas rotas para liberar as respostas."
+      selectedAnswer={state.selectedAnswer}
+      hintVisible={state.hintVisible}
+      feedback={state.feedback}
+      completed={state.completed}
+      prompt={<p className="challenge-equation">3 + 4 = ?</p>}
+      onSelect={(answer) => dispatch({ type: 'select-answer', answer })}
+      onHint={() => dispatch({ type: 'show-hint' })}
+      onConfirm={confirmAnswer}
+    />
+    {state.completed && <CompletionActions
+      nextHref="#/desafios/multiplicacao-1"
+      nextLabel="Continuar para Multiplicação"
+      onReplay={() => dispatch({ type: 'reset' })}
+    />}
   </>;
 }

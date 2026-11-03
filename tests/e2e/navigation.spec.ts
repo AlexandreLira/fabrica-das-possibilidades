@@ -23,7 +23,7 @@ test('navega, lembra o som e mantém apenas um canvas após reentradas', async (
 
 test('joga a fase de adição com dica, tentativas e conclusão', async ({ page }) => {
   await page.goto('/#/setores');
-  await page.getByRole('link', { name: 'Jogar fase teste' }).click();
+  await page.getByRole('link', { name: 'Jogar fase de Adição' }).click();
   await expect(page.getByRole('heading', { name: 'Pedido com rota alternativa' })).toBeFocused();
 
   const answerSeven = page.getByRole('radio', { name: '7' });
@@ -37,23 +37,23 @@ test('joga a fase de adição com dica, tentativas e conclusão', async ({ page 
   await expect(hintButton).toHaveAttribute('aria-expanded', 'false');
   await hintButton.click();
   await expect(hintButton).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.getByText(/juntamos as quantidades/)).toBeVisible();
+  await expect(page.getByText(/Conte as opções de um grupo/)).toBeVisible();
 
   await page.locator('.answer-options label').filter({ hasText: '12' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('status')).toContainText('não multiplicamos');
+  await expect(page.getByRole('status')).toContainText('Multiplicar contaria');
   await expect(page.getByRole('radio', { name: '12' })).not.toBeChecked();
 
   await page.locator('.answer-options label').filter({ hasText: '6' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('status')).toContainText('Conte novamente');
+  await expect(page.getByRole('status')).toContainText('Confira os dois grupos');
 
   await page.locator('.answer-options label').filter({ hasText: '7' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toContainText('3 + 4 = 7 possibilidades');
   await expect(page.getByRole('radio', { name: '12' })).toBeDisabled();
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(page.getByRole('heading', { name: 'Conheça os setores' })).toBeFocused();
+  await page.getByRole('link', { name: 'Continuar para Multiplicação' }).click();
+  await expect(page.getByRole('heading', { name: 'Monte o robô' })).toBeFocused();
 });
 
 test('mantém um único canvas da fase após sair e reentrar', async ({ page }) => {
@@ -61,7 +61,7 @@ test('mantém um único canvas da fase após sair e reentrar', async ({ page }) 
   await expect(page.locator('.challenge-game canvas')).toHaveCount(1);
   await page.getByRole('link', { name: 'Voltar ao mapa' }).click();
   await expect(page.locator('.challenge-game canvas')).toHaveCount(0);
-  await page.getByRole('link', { name: 'Jogar fase teste' }).click();
+  await page.getByRole('link', { name: 'Jogar fase de Adição' }).click();
   await expect(page.locator('.challenge-game canvas')).toHaveCount(1);
 });
 
@@ -70,12 +70,15 @@ test('conclui a fase usando somente o teclado', async ({ page, browserName }) =>
   const tab = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
   const local = page.getByRole('button', { name: /Examinar rota local/ });
   const express = page.getByRole('button', { name: /Examinar rota expressa/ });
-  await page.keyboard.press(tab);
+  await expect(page.getByRole('heading', { name: 'Pedido com rota alternativa' })).toBeFocused();
+  await page.getByRole('link', { name: 'Pular para o conteúdo' }).focus();
   await expect(page.getByRole('link', { name: 'Pular para o conteúdo' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('main')).toBeFocused();
   await page.keyboard.press(tab);
   await expect(page.getByRole('link', { name: 'Voltar ao mapa' })).toBeFocused();
+  await page.keyboard.press(tab);
+  await expect(page.getByRole('button', { name: 'Ocultar tutorial' })).toBeFocused();
   await page.keyboard.press(tab);
   await expect(local).toBeFocused();
   await page.keyboard.press('Enter');
@@ -92,7 +95,7 @@ test('conclui a fase usando somente o teclado', async ({ page, browserName }) =>
   await page.keyboard.press(tab);
   await expect(page.getByRole('button', { name: 'Confirmar' })).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('button', { name: 'Continuar' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Continuar para Multiplicação' })).toBeVisible();
 });
 
 for (const width of [320, 390]) {
@@ -114,7 +117,7 @@ test('teclado alcança controles e a rota recebe foco', async ({ page, browserNa
   await page.goto('/');
   await expect(page.locator('h1')).toBeVisible();
   const tab = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
-  await page.keyboard.press(tab);
+  await page.getByRole('link', { name: 'Pular para o conteúdo' }).focus();
   await expect(page.getByRole('link', { name: 'Pular para o conteúdo' })).toBeFocused();
   await page.keyboard.press(tab);
   await expect(page.getByRole('button', { name: 'Silenciar efeitos sonoros' })).toBeFocused();
@@ -132,7 +135,7 @@ test('a aplicação e o motor ficam disponíveis offline após o primeiro carreg
   await page.getByRole('link', { name: 'Começar' }).click();
   await expect(page.getByRole('button', { name: 'Cumprimentar B.O.T.' })).toBeEnabled();
   await expect(page.locator('canvas')).toHaveCount(1);
-  await page.getByRole('link', { name: 'Jogar fase teste' }).click();
+  await page.getByRole('link', { name: 'Jogar fase de Adição' }).click();
   await expect(page.getByRole('heading', { name: 'Pedido com rota alternativa' })).toBeVisible();
   await expect(page.locator('.challenge-game canvas')).toHaveCount(1);
 });
@@ -172,7 +175,7 @@ test('falha do Phaser mantém a fase jogável com representação estática', as
   await page.getByRole('button', { name: /Examinar rota expressa/ }).click();
   await page.locator('.answer-options label').filter({ hasText: '7' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('button', { name: 'Continuar' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Continuar para Multiplicação' })).toBeVisible();
 });
 
 });

@@ -38,4 +38,9 @@ describe('estado da fase de adição', () => {
     expect(completed).toMatchObject({ completed: true, selectedAnswer: 7 });
     expect(ignored).toEqual(completed);
   });
+
+  it('reinicia a interação depois da conclusão', () => {
+    const completed = { ...additionChallengeInitialState, completed: true, selectedAnswer: 7, feedback: 'concluída' };
+    expect(reduceAdditionChallenge(completed, { type: 'reset' })).toEqual(additionChallengeInitialState);
+  });
 });

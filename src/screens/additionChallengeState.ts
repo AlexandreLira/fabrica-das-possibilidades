@@ -12,7 +12,8 @@ export type AdditionChallengeAction =
   | { type: 'reveal-route'; routeId: AdditionRouteId }
   | { type: 'select-answer'; answer: number }
   | { type: 'show-hint' }
-  | { type: 'confirm-answer' };
+  | { type: 'confirm-answer' }
+  | { type: 'reset' };
 
 export const additionChallengeInitialState: AdditionChallengeState = {
   revealedRoutes: [],
@@ -26,6 +27,7 @@ export function reduceAdditionChallenge(
   state: AdditionChallengeState,
   action: AdditionChallengeAction,
 ): AdditionChallengeState {
+  if (action.type === 'reset') return additionChallengeInitialState;
   if (state.completed) return state;
 
   switch (action.type) {

@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   pigeonholeChallengeInitialState,
   reducePigeonholeChallenge,
+  type BoxIndex,
 } from './pigeonholeChallengeState';
 
-function distribute(...boxes: readonly number[]) {
+function distribute(...boxes: readonly BoxIndex[]) {
   return boxes.reduce(
     (state, boxIndex) => reducePigeonholeChallenge(state, { type: 'place-item', boxIndex }),
     pigeonholeChallengeInitialState,

@@ -143,6 +143,49 @@ h2 { font-size: 18px; font-weight: 800; line-height: 1.35; }
 .challenge-feedback { min-height: 20px; margin: 16px 0; }
 .challenge-feedback p { margin: 0; padding: 14px 16px; border: 2px solid #df7770; background: #482d32; color: #fff0e9; font-size: 13px; line-height: 1.55; }
 .challenge-feedback.is-success p { border-color: #71dfda; background: #17423f; color: #ecfffb; }
+.challenge-tutorial { margin: 18px 0 22px; padding: 14px 16px; border: 2px solid #45606e; background: #173340; }
+.tutorial-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.tutorial-heading h2 { margin: 0; font-size: 15px; }
+.tutorial-toggle { min-height: 48px; padding: 9px 12px; font-size: 10px; }
+.challenge-tutorial ol { margin: 12px 0 0; padding-left: 22px; color: #d3e0e2; font-size: 12px; line-height: 1.6; }
+.challenge-question { margin: 9px 0 14px; font-size: 17px; line-height: 1.45; }
+.completion-actions { display: grid; gap: 10px; margin-top: 18px; }
+.sector-complete { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 12px; color: #24534e; font-size: 11px; font-weight: 800; }
+.sector-complete span { width: 22px; height: 22px; display: grid; place-items: center; background: #71dfda; border: 2px solid #183746; }
+.robot-workbench, .storage-board { margin: 22px 0; padding: 16px; border: 2px solid #45606e; background: #173340; }
+.robot-workbench > h2, .storage-heading h2 { margin: 0 0 14px; }
+.robot-preview { min-height: 145px; display: grid; place-items: center; align-content: center; margin-bottom: 16px; border: 2px solid #385b67; background: repeating-linear-gradient(0deg, transparent 0 15px, #24404c80 15px 16px), repeating-linear-gradient(90deg, transparent 0 15px, #24404c80 15px 16px), #112938; }
+.robot-antenna { height: 34px; color: #f4c955; font: 900 30px monospace; line-height: 1; }
+.robot-head { width: 66px; height: 56px; display: grid; place-items: center; border: 4px solid #081c26; box-shadow: inset 0 0 0 3px #ffffff55; color: #112938; font: 26px monospace; }
+.robot-preview p { min-height: 18px; margin: 10px 8px 0; color: #d3e0e2; font-size: 11px; text-align: center; }
+.part-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 14px; padding: 0; border: 0; }
+.part-options:last-child { grid-template-columns: 1fr 1fr; margin-bottom: 0; }
+.part-options legend { grid-column: 1 / -1; margin-bottom: 6px; font-size: 12px; font-weight: 800; }
+.part-options button { min-height: 60px; padding: 8px 5px; border: 2px solid #5b7079; background: #112938; color: #f7f2e5; font-size: 9px; line-height: 1.3; }
+.part-options button i, .part-options button b { display: block; width: 24px; height: 20px; margin: 0 auto 6px; border: 2px solid #081c26; font: 900 20px monospace; }
+.part-options button b { height: 24px; border: 0; color: #f4c955; }
+.part-options button.is-selected { border-color: #f4c955; background: #284653; box-shadow: inset 0 0 0 2px #f4c95544; }
+.combination-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0; margin: 18px 0; list-style: none; }
+.combination-grid li { min-height: 56px; display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid #57707a; background: #173340; font-size: 9px; line-height: 1.35; }
+.combination-grid i { width: 22px; height: 22px; flex: none; border: 2px solid #081c26; }
+.storage-heading { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.storage-heading strong { color: #f4c955; font: 10px monospace; text-align: right; }
+.box-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.box-grid button { min-height: 108px; padding: 9px 5px; border: 3px solid #8c6b3d; border-top-width: 1px; background: #5b482e; color: #fff1c7; box-shadow: inset 0 -5px #3b3023; }
+.box-grid button span { display: block; margin-bottom: 9px; font-size: 10px; font-weight: 800; }
+.box-grid button b { display: block; min-height: 28px; color: #f4c955; font: 10px monospace; line-height: 1.4; }
+.box-grid button strong { display: block; margin-top: 7px; font-size: 9px; }
+.reset-distribution { width: 100%; min-height: 48px; margin-top: 12px; border: 2px solid #617783; background: #112938; color: #f7f2e5; font-size: 11px; font-weight: 800; }
+.limit-distribution { margin: 18px 0; padding: 16px; border-left: 4px solid #cbb7f1; background: #292f4b; }
+.limit-distribution strong { color: #e6dafa; }
+.limit-distribution p { margin: 7px 0 0; font-size: 12px; line-height: 1.6; }
+.principle-summary { display: grid; gap: 14px; margin: 24px 0; }
+.principle-summary .panel { position: relative; padding-left: 68px; }
+.principle-summary .panel > span { position: absolute; left: 16px; top: 18px; width: 38px; height: 38px; display: grid; place-items: center; border: 2px solid #112938; background: #f4c955; font: 900 24px monospace; }
+.principle-summary .panel:nth-child(2) > span { background: #71dfda; }
+.principle-summary .panel:nth-child(3) > span { background: #cbb7f1; }
+.principle-summary h2 { margin: 0 0 7px; font-size: 16px; }
+.principle-summary p { margin: 0; color: #425d66; font-size: 12px; line-height: 1.55; }
 @media (min-width: 600px) { .app-shell { margin-block: 24px; min-height: calc(100dvh - 48px); box-shadow: 8px 8px 0 #071923; border: 1px solid #38505d; } }
-@media (max-width: 350px) { .app-shell { padding-inline: max(18px, env(safe-area-inset-left)); } .hero-eyebrow { font-size: 8px; letter-spacing: 1px; } .panel { padding: 16px; } .journey-summary { font-size: 9px; gap: 6px; } .route-grid { grid-template-columns: 1fr; } .route-button { min-height: 64px; } .challenge-actions { grid-template-columns: 1fr; } }
+@media (max-width: 350px) { .app-shell { padding-inline: max(18px, env(safe-area-inset-left)); } .hero-eyebrow { font-size: 8px; letter-spacing: 1px; } .panel { padding: 16px; } .journey-summary { font-size: 9px; gap: 6px; } .route-grid { grid-template-columns: 1fr; } .route-button { min-height: 64px; } .challenge-actions { grid-template-columns: 1fr; } .tutorial-heading { align-items: stretch; flex-direction: column; } .part-options { grid-template-columns: 1fr; } .part-options:last-child { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
