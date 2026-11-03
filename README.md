@@ -3,8 +3,10 @@
 Fundação de um jogo educativo mobile-first sobre os princípios da Adição, da
 Multiplicação e das Casas de Pombo. Interface em português, para Ensino Médio.
 
-Esta versão contém início, instruções, apresentação dos três setores e uma cena
-interativa do B.O.T. **As nove missões, dicas e pontuação ainda não estão implementadas.**
+Esta versão demonstrável contém início, tutorial, mapa, diálogos do B.O.T. e exatamente
+três fases completas: uma de Adição, uma de Multiplicação e uma de Casas de Pombo.
+Cada fase oferece interação, dica, novas tentativas, feedback visual e sonoro,
+explicação matemática, animação Phaser e alternativa estática sem o motor.
 Não há backend, autenticação, banco remoto, telemetria ou serviços externos em execução.
 O PDF original foi preservado.
 
@@ -52,8 +54,18 @@ npm run build
 npm run preview
 ```
 
-A saída está em `dist/`; nenhuma publicação foi realizada. A aplicação usa caminhos
-relativos e rotas hash, dispensando regras de reescrita no servidor estático.
+A saída está em `dist/`; esta entrega não faz publicação automática. A aplicação usa
+caminhos relativos e rotas hash, dispensando regras de reescrita no servidor estático.
+
+## Fases demonstráveis
+
+- `#/desafios/adicao-1`: examinar duas rotas e aplicar `3 + 4 = 7`.
+- `#/desafios/multiplicacao-1`: combinar três carcaças com duas antenas em `3 × 2 = 6`.
+- `#/desafios/casas-de-pombo-1`: distribuir sete peças em três caixas e garantir `⌈7 ÷ 3⌉ = 3`.
+- `#/conclusao`: revisar os três princípios após concluir a sequência.
+
+As fases ficam abertas no mapa. “Continuar” segue a ordem acima, e “Jogar novamente”
+reinicia a mecânica sem apagar a marca de conclusão da sessão.
 
 ## Organização
 
@@ -61,12 +73,12 @@ relativos e rotas hash, dispensando regras de reescrita no servidor estático.
 src/
   app/          Inicialização, navegação hash e atualização PWA
   ui/           Tokens CSS/Tailwind e componentes compartilhados
-  screens/      Início, instruções e setores
+  screens/      Início, instruções, setores, fases e resumo final
   game/         Host React, criação/destruição do motor
     bridge/     Contrato e canal de eventos tipados
     scenes/     Apresentação Phaser do B.O.T.
   domain/math/  Regras matemáticas puras e testes
-  content/      Metadados dos setores e tipo mínimo de desafio
+  content/      Metadados e configurações tipadas dos três desafios
   state/        Zustand e armazenamento local versionado
   audio/        Efeito sintetizado e controle central de silêncio
   assets/       Arte geométrica local do B.O.T.
@@ -77,12 +89,16 @@ tests/e2e/     Cenários mobile sobre a build de produção
 React controla navegação, instruções, acessibilidade e preferências. Phaser é
 importado dinamicamente somente ao abrir setores. O service worker pode baixá-lo
 antecipadamente para o cache offline, mas isso não inicializa o motor.
-A cena não conhece Zustand nem regras matemáticas. O contrato é:
+As cenas não conhecem Zustand nem regras matemáticas. O contrato inclui:
 
 - `scene:ready`: sem dados; habilita o botão React.
 - `scene:failed`: sem dados; ativa a alternativa estática se o sprite falhar.
 - `bot:greet`: `{ reducedMotion: boolean }`; solicita uma reação visual.
 - `bot:greeted`: `{ message: string }`; anuncia feedback textual acessível.
+- `challenge:route-revealed`: revela uma rota na fase de Adição.
+- `challenge:robot-configured`: sincroniza carcaça e antena na Multiplicação.
+- `challenge:item-placed` e `challenge:distribution-reset`: sincronizam o depósito.
+- `challenge:answer-evaluated` e `challenge:completed`: acionam feedback visual.
 
 Cada apresentação possui seu próprio canal. A saída remove ouvintes e destrói o
 jogo. Falhas no carregamento mostram uma imagem estática e preservam a navegação.
@@ -91,8 +107,9 @@ em vez do formato de data URI produzido pelo Vite. Não há física nesta etapa.
 
 O design usa arte geométrica original, fonte de sistema (sem downloads), áreas de
 toque de 48 px, safe areas, texto legível, foco visível e movimento reduzido.
-O áudio é sintetizado localmente após um gesto; não existe autoplay. Silenciar
-interrompe efeitos ativos e persiste a preferência.
+O áudio é sintetizado localmente após um gesto; não existe autoplay. Há efeitos
+distintos de exploração, seleção, colocação, erro, acerto e conclusão. Um novo efeito
+interrompe o anterior, e silenciar interrompe efeitos ativos e persiste a preferência.
 
 ## Contratos matemáticos
 
@@ -115,8 +132,9 @@ garantido pela configuração pedagógica de cada futuro desafio.
 
 Chave `fabrica-possibilidades:v1`, formato `{ version: 1, soundEnabled,
 instructionsCompleted }`. Tipos inválidos, JSON corrompido e versões desconhecidas
-voltam aos padrões. Falha de leitura/gravação mantém a sessão em memória. Progresso
-começa vazio e não é persistido nem pontuado até a implementação das missões.
+voltam aos padrões. Falha de leitura/gravação mantém a sessão em memória. A conclusão
+das três fases existe apenas durante a sessão atual e não entra no `localStorage`;
+recarregar reinicia esse progresso. Não há pontuação.
 
 O service worker registra apenas em produção, cacheia app, motor e recursos locais,
 e assume controle após a instalação inicial. Espere concluir esse carregamento
@@ -145,13 +163,15 @@ Fontes oficiais: [Vite](https://vite.dev/guide/),
 - Compatibilidade visada: navegadores atuais de Android e iPhone. Tailwind 4
   depende de recursos modernos de CSS; navegadores antigos não são alvo desta base.
 
-## Resultado da validação — 31/10/2026
+## Resultado da validação — 03/11/2026
 
 - Lint, TypeScript e build: passaram.
-- Vitest: **38 testes passaram**.
-- Playwright: **16 testes passaram** nos perfis Android/Chromium e iPhone/WebKit,
-  incluindo offline, falhas de motor/sprite, teclado e larguras 320/390 px.
-- Desenvolvimento/StrictMode: três ciclos de entrada/saída da cena, canvas único,
-  feedback correto e nenhum erro de página.
-- Revisão visual: início 390 × 844 e setores em perfil iPhone.
-- Revisão independente concluída; notas e decisões em `docs/implementation.md`.
+- Vitest: **62 testes passaram** em 8 arquivos.
+- Playwright: **46 testes passaram** nos perfis Android/Chromium e iPhone/WebKit,
+  incluindo as três fases, sequência completa, offline, fallback, teclado, som
+  desligado, movimento reduzido, canvas único e larguras 320/390 px.
+- Build PWA: 17 recursos no precache; permanece o aviso conhecido do chunk Phaser.
+- Revisão visual: três fases completas no perfil iPhone 13, sem corte ou
+  transbordamento observado.
+- A política do áudio foi testada automaticamente, mas o ambiente sem saída audível
+  não permitiu avaliar manualmente timbre e volume.

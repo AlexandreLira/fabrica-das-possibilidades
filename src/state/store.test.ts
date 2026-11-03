@@ -12,7 +12,26 @@ it('restaura preferências e tutorial sem inventar progresso', () => {
   const restored = createAppStore(storage).getState();
   expect(restored.soundEnabled).toBe(false);
   expect(restored.instructionsCompleted).toBe(true);
-  expect(restored.progress).toEqual({});
+  expect(restored.completedChallengeIds).toEqual([]);
+  expect(restored.allDemoChallengesCompleted).toBe(false);
+});
+
+it('acompanha conclusões apenas durante a sessão e ignora repetições', () => {
+  const storage = memoryStorage();
+  const store = createAppStore(storage);
+  store.getState().completeChallenge('adicao-1');
+  store.getState().completeChallenge('adicao-1');
+  store.getState().completeChallenge('multiplicacao-1');
+  expect(store.getState()).toMatchObject({
+    completedChallengeIds: ['adicao-1', 'multiplicacao-1'],
+    allDemoChallengesCompleted: false,
+  });
+  store.getState().completeChallenge('casas-de-pombo-1');
+  expect(store.getState().allDemoChallengesCompleted).toBe(true);
+
+  const persisted = JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}');
+  expect(persisted).toEqual({ version: 1, soundEnabled: true, instructionsCompleted: false });
+  expect(createAppStore(storage).getState().completedChallengeIds).toEqual([]);
 });
 it.each(['{bad', 'null', JSON.stringify({ version: 1, soundEnabled: 'yes', instructionsCompleted: true }), JSON.stringify({ version: 999, soundEnabled: false })])('recupera armazenamento inválido %s', (data) => {
   const storage = memoryStorage(); storage.setItem(STORAGE_KEY, data);

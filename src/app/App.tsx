@@ -5,9 +5,13 @@ import { useRoute } from './navigation';
 import { Home } from '../screens/Home';
 import { Instructions } from '../screens/Instructions';
 import { Sectors } from '../screens/Sectors';
+import { AdditionChallenge } from '../screens/AdditionChallenge';
+import { MultiplicationChallenge } from '../screens/MultiplicationChallenge';
+import { PigeonholeChallenge } from '../screens/PigeonholeChallenge';
+import { Completion } from '../screens/Completion';
 import { UpdateNotice } from './UpdateNotice';
 export function App() {
-  const route = useRoute(); const previousRoute = useRef(route);
+  const route = useRoute(); const previousRoute = useRef<typeof route | null>(null);
   const sound = useStore(appStore, (state) => state.soundEnabled);
   const toggle = useStore(appStore, (state) => state.toggleSound);
   useEffect(() => {
@@ -23,7 +27,13 @@ export function App() {
         <span>Som {sound ? 'ligado' : 'desligado'}</span>
       </button>
     </header>
-    <main id="main" tabIndex={-1}>{route === 'home' ? <Home /> : route === 'instructions' ? <Instructions /> : <Sectors />}</main>
+    <main id="main" tabIndex={-1}>{route === 'home' ? <Home />
+      : route === 'instructions' ? <Instructions />
+        : route === 'sectors' ? <Sectors />
+          : route === 'addition-challenge' ? <AdditionChallenge />
+            : route === 'multiplication-challenge' ? <MultiplicationChallenge />
+              : route === 'pigeonhole-challenge' ? <PigeonholeChallenge />
+                : <Completion />}</main>
     <footer className="app-footer"><span aria-hidden="true">◆</span> FEITO DE IDEIAS E POSSIBILIDADES <span aria-hidden="true">◆</span></footer>
     {import.meta.env.PROD && <UpdateNotice />}
   </div>;

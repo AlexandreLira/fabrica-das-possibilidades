@@ -1,38 +1,66 @@
-# Fundação técnica — registro de implementação
+# Demonstração com três fases — registro de implementação
 
-Plano aprovado na conversa: React/TypeScript/Vite, Phaser 4 sob demanda, Tailwind,
-Zustand/localStorage, matemática pura, Vitest, Playwright e PWA offline.
-Sem missões, backend, autenticação, pontuação simulada ou publicação.
+Implementação feita na branch `feat/demo-tres-fases`, derivada de
+`feat/fase-adicao-1`. Esta entrega não faz merge, push ou publicação.
 
-- Configuração e dependências: implementadas; npm ls sem conflitos.
-- Matemática, persistência e eventos: implementados; 38 testes unitários passaram.
-- Interface e cena: implementadas; tela inicial revisada em 390 × 844.
-- StrictMode: três ciclos de entrada/saída, um canvas, feedback correto e nenhum
-  erro de página no Chromium de desenvolvimento.
-- Revisão independente: concluída; falha do sprite foi reproduzida em teste e
-  recebeu evento tipado scene:failed. Listas esparsas agora são rejeitadas.
-- Verificação final: lint, typecheck e build passaram; 38 testes unitários e
-  16 testes Playwright passaram (Android/Chromium e iPhone/WebKit).
+## Comportamento entregue
+
+- Adição: duas rotas mutuamente exclusivas, respostas `6`, `7` e `12`, com
+  gabarito calculado por `countAlternatives([3, 4])`.
+- Multiplicação: três carcaças e duas antenas, prévia do robô e grade das seis
+  combinações, com gabarito calculado por `countCombinations([3, 2])`.
+- Casas de Pombo: distribuição de sete peças em três caixas, reinício e
+  explicação `3–2–2`, com gabarito fixado por
+  `minimumGuaranteedOccupancy(7, 3)` e independente da distribuição escolhida.
+- Tutoriais contextuais revisáveis, dica, feedback específico de erro, novas
+  tentativas, explicação de acerto, repetição e resumo final do B.O.T.
+- Conclusões guardadas somente no Zustand em memória. Preferências de som e
+  instruções continuam sendo os únicos dados persistidos no `localStorage`.
+
+## React, Phaser e áudio
+
+React mantém as regras, as respostas, os reducers e a acessibilidade. O host
+Phaser seleciona uma cena visual por princípio e sincroniza o estado atual por
+eventos tipados, inclusive quando o carregamento termina depois da interação.
+Cada tela continua jogável com sua representação React se o motor falhar.
+
+O áudio usa Web Audio sintetizado e oferece efeitos curtos para exploração,
+seleção, colocação, erro, acerto e conclusão. O efeito anterior é interrompido
+para evitar sobreposição; silenciar interrompe o som ativo. Falha ou bloqueio do
+`AudioContext` não altera o fluxo visual.
 
 ## Decisões
 
-- Inicializar na pasta solicitada, em feat/fundacao, pois não havia Git ou código
-  anterior. PDF original intacto; nenhuma publicação ou commit automático.
-- TypeScript 6.0.3 em vez do latest 7 para atender às dependências pares do lint.
-- Arte geométrica original e fontes de sistema, sem serviço externo de assets.
-- Loader Phaser recebe SVG como arquivo, usando ?no-inline.
-- PWA com clientsClaim para uso offline sem exigir um segundo acesso online;
-  atualizações continuam dependendo do botão Atualizar.
-- Testes que simulam falha de rede desabilitam service worker apenas nesses
-  contextos. O trace demonstrou que o cache recuperava o sprite após falha/retry,
-  impedindo a simulação. Os testes offline mantêm service worker habilitado.
+- Reutilizar a fase de Adição e compartilhar apenas cabeçalho, tutorial, painel
+  de respostas, dica, feedback e ações finais.
+- Manter reducers específicos porque montagem e distribuição têm invariantes
+  diferentes da exploração de rotas.
+- Remontar a cena ao escolher “Jogar novamente”, garantindo visual limpo sem
+  criar ações matemáticas dentro do Phaser.
+- Manter todas as fases abertas no mapa e usar uma ordem fixa apenas no botão
+  “Continuar”: Adição → Multiplicação → Casas de Pombo → resumo.
+- Não adicionar dependências, arquivos de áudio, pontuação, vidas ou cronômetro.
 
 ## Limites conhecidos
 
-- Sem teste em aparelhos físicos; apenas perfis mobile Chromium/WebKit.
-- Chunk do Phaser acima do limiar padrão de aviso do Vite, separado por import
-  dinâmico; cache antecipado para offline.
-- Auditoria: zero vulnerabilidades de produção; 21 avisos em ferramentas de
-  desenvolvimento. Não forçar rebaixamentos incompatíveis para silenciá-los.
-- Melhoria menor sugerida pela revisão: anúncio por live region para a chegada
-  de uma atualização PWA; o aviso e seus botões já são acessíveis na página.
+- A conclusão das fases é perdida ao recarregar, por decisão de escopo.
+- Os efeitos são sintetizados; testes automatizados verificam controle e
+  interrupção, mas não substituem avaliação auditiva humana.
+- A validação usa perfis Android/Chromium e iPhone/WebKit; aparelhos físicos
+  ainda precisam de uma conferência posterior.
+- O chunk do Phaser permanece acima do limiar de aviso do Vite, separado por
+  import dinâmico e incluído no cache offline.
+
+## Verificação
+
+- `npm run lint`: passou.
+- `npm run typecheck`: passou.
+- `npm run test:run`: 62 testes passaram em 8 arquivos.
+- `npm run build`: passou; PWA gerou service worker com 17 recursos em precache.
+- `npm run test:e2e`: 46 testes passaram em Android/Chromium e iPhone/WebKit.
+- Inspeção visual: Adição, Multiplicação e Casas de Pombo foram capturadas no
+  perfil iPhone 13; hierarquia, contraste, áreas de toque e largura estavam
+  coerentes, sem transbordamento horizontal.
+- Áudio: criação, silenciamento, interrupção e indisponibilidade foram validados
+  por testes. O ambiente headless não ofereceu saída audível para avaliar timbre
+  e volume manualmente.
