@@ -23,8 +23,8 @@ describe('estado da fase de adição', () => {
   });
 
   it.each([
-    [12, 'As rotas são alternativas: usamos uma ou outra, então não multiplicamos.'],
-    [6, 'Conte novamente todas as opções das duas rotas.'],
+    [12, 'Multiplicar contaria pares de veículos. Aqui escolhemos apenas um veículo, de uma rota ou da outra.'],
+    [6, 'Confira os dois grupos: são 3 veículos em uma rota e 4 na outra.'],
   ] as const)('mantém a fase ativa após a resposta errada %i', (answer, feedback) => {
     const ready = { ...additionChallengeInitialState, revealedRoutes: ['local', 'express'] as const, selectedAnswer: answer };
     const state = reduceAdditionChallenge(ready, { type: 'confirm-answer' });
