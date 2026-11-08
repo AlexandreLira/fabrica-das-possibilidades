@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="400" viewBox="0 0 1120 400" role="img" aria-labelledby="title description" shape-rendering="crispEdges">
+  <title id="title">Fábrica das Possibilidades</title>
+  <desc id="description">Um robô pixelado dentro de uma fábrica, ao lado do nome Fábrica das Possibilidades.</desc>
+
+  <!-- Fábrica e esteira enquadram o B.O.T. original de src/assets/bot.svg. -->
+  <g transform="translate(34 34) scale(1.04)">
+    <path fill="#112938" d="M24 93h42V57h36v25h34V36h42v46h118v198H24z"/>
+    <path fill="#f4c955" d="M34 101h26V67h22v25h60V46h22v46h124v178H34z"/>
+    <path fill="#112938" d="M40 116h26v23H40zM254 116h25v23h-25z"/>
+    <path fill="#71dfda" d="M45 121h16v13H45zM259 121h15v13h-15z"/>
+    <path fill="#112938" d="M250 170h24v6h-24zM259 161h6v24h-6zM254 223h10v10h-10zM268 223h10v10h-10zM254 237h10v10h-10zM268 237h10v10h-10z"/>
+    <path fill="#71dfda" d="M250 170h24v6h-24zM259 161h6v24h-6zM257 226h4v4h-4zM271 226h4v4h-4zM257 240h4v4h-4zM271 240h4v4h-4z"/>
+    <path fill="#112938" d="M18 284h284v12H18zM24 296h272v8H24z"/>
+    <path fill="#71dfda" d="M42 286h16v8H42zM90 286h16v8H90zM138 286h16v8h-16zM186 286h16v8h-16zM234 286h16v8h-16zM282 286h10v8h-10z"/>
+    <g transform="translate(76 76) scale(3.5)">
+      <path fill="#112938" d="M22 0h4v10h-4zM8 8h32v4h4v24h-4v4H8v-4H4V12h4zM10 40h28v12H10zM6 44h4v8H6zM38 44h4v8h-4zM12 52h8v4h-8zM28 52h8v4h-8z"/>
+      <path fill="#f4c955" d="M22 0h4v4h-4zM8 12h32v24H8zM14 40h20v10H14z"/>
+      <path fill="#ffe7a0" d="M8 12h32v4H8zM14 40h20v3H14z"/>
+      <path fill="#183746" d="M12 18h24v12H12z"/>
+      <path fill="#71dfda" d="M16 21h4v5h-4zM28 21h4v5h-4z"/>
+      <path fill="#9c702c" d="M12 32h4v2h-4zM32 32h4v2h-4zM20 44h8v3h-8z"/>
+    </g>
+  </g>
+
+  <g fill="#112938" font-family="Trebuchet MS, Arial, sans-serif">
+    <text x="390" y="170" font-size="68" font-weight="700" letter-spacing="-2">Fábrica das</text>
+    <text x="384" y="272" font-size="88" font-weight="900" letter-spacing="-3">Possibilidades</text>
+  </g>
+  <path fill="#f4c955" d="M392 300h664v12H392z"/>
+  <path fill="#71dfda" d="M392 324h168v8H392z"/>
+</svg>
