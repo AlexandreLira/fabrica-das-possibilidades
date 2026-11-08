@@ -67,6 +67,48 @@ caminhos relativos e rotas hash, dispensando regras de reescrita no servidor est
 As fases ficam abertas no mapa. “Continuar” segue a ordem acima, e “Jogar novamente”
 reinicia a mecânica sem apagar a marca de conclusão da sessão.
 
+## Frentes e entregas
+
+| Responsável | Frente | Entregas |
+| --- | --- | --- |
+| Você | Desenvolvimento principal e coordenação | Organizar prioridades, manter a arquitetura, desenvolver a interface React, integrar as fases, coordenar revisões e cuidar da publicação quando prevista. |
+| Javier | Mecânicas e revisão técnica | Implementar interações e cenas Phaser, reaproveitar mecânicas, revisar código e avaliar a viabilidade técnica das propostas. |
+| Ribamar | Princípio da Adição | Elaborar desafios, explicar os gabaritos e validar se as implementações representam corretamente as propostas. |
+| Felipe | Princípio da Multiplicação | Elaborar desafios, explicar os gabaritos e validar se as implementações representam corretamente as propostas. |
+| Andrey | Princípio das Casas de Pombo | Elaborar desafios, explicar os gabaritos e validar se as implementações representam corretamente as propostas. |
+| Eric | Narrativa, tutorial e apresentação | Desenvolver a história e os diálogos do B.O.T., elaborar instruções e organizar ou atualizar os slides quando uma próxima entrega exigir. |
+
+A apresentação do projeto foi realizada em **2 de novembro de 2026**, usando
+`Fabrica-das-Possibilidades.pdf`. Essa entrega está concluída; não é necessário
+refazer os slides ou a apresentação. O material poderá ser atualizado se uma
+entrega futura confirmar essa necessidade.
+
+## Fluxo por desafio
+
+Consulte o [guia de elaboração das fases](docs/fluxo-elaboracao-fases.md) para
+usar o modelo completo, os critérios de revisão e um exemplo preenchido.
+
+1. A pessoa responsável pelo princípio elabora a proposta usando o modelo abaixo.
+2. Outra pessoa revisa o conteúdo matemático, o gabarito e o cálculo passo a passo.
+3. Os desenvolvedores avaliam a viabilidade técnica e esclarecem dúvidas antes da implementação.
+4. Um desenvolvedor implementa o desafio; o outro apoia a integração e a revisão.
+5. A pessoa que propôs o desafio testa a implementação e valida o conteúdo.
+6. Eric registra os resultados nos slides somente quando houver uma nova entrega de apresentação.
+
+Nenhum desafio deve começar a ser implementado antes da revisão do conteúdo e do
+gabarito.
+
+**Modelo de proposta de desafio:**
+
+- Nome da fase e princípio matemático.
+- Objetivo de aprendizagem e contexto dentro da fábrica.
+- Fala inicial do B.O.T. e elementos que aparecem na tela.
+- Ação esperada do jogador e dados usados na questão.
+- Resposta correta e cálculo passo a passo.
+- Possíveis respostas erradas e feedback de acerto e erro.
+- Dica e recursos visuais ou sonoros necessários.
+- Condição para considerar a fase concluída.
+
 ## Organização
 
 ```text
