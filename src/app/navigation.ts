@@ -1,16 +1,17 @@
 import { useSyncExternalStore } from 'react';
-export type Route = 'home' | 'instructions' | 'sectors' | 'addition-challenge' | 'multiplication-challenge' | 'pigeonhole-challenge' | 'completion';
+import { isChallengeSlotId, type ChallengeId } from '../content/sectors';
+export type Route = 'home' | 'instructions' | 'sectors' | 'completion' | `challenge:${ChallengeId}`;
 function subscribe(callback: () => void) {
   window.addEventListener('hashchange', callback);
   return () => window.removeEventListener('hashchange', callback);
 }
-function snapshot(): Route {
-  if (window.location.hash === '#/instrucoes') return 'instructions';
-  if (window.location.hash === '#/setores') return 'sectors';
-  if (window.location.hash === '#/desafios/adicao-1') return 'addition-challenge';
-  if (window.location.hash === '#/desafios/multiplicacao-1') return 'multiplication-challenge';
-  if (window.location.hash === '#/desafios/casas-de-pombo-1') return 'pigeonhole-challenge';
-  if (window.location.hash === '#/conclusao') return 'completion';
+export function parseRoute(hash: string): Route {
+  if (hash === '#/instrucoes') return 'instructions';
+  if (hash === '#/setores') return 'sectors';
+  if (hash === '#/conclusao') return 'completion';
+  const match = /^#\/desafios\/([a-z-]+-\d+)$/.exec(hash);
+  if (match?.[1] && isChallengeSlotId(match[1])) return `challenge:${match[1]}`;
   return 'home';
 }
+function snapshot(): Route { return parseRoute(window.location.hash); }
 export function useRoute(): Route { return useSyncExternalStore(subscribe, snapshot, () => 'home'); }

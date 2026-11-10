@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import type { ChallengeId } from '../content/sectors';
+import { demoChallenges } from '../content/challenges';
 export const STORAGE_KEY = 'fabrica-possibilidades:v1';
 interface Preferences { soundEnabled: boolean; instructionsCompleted: boolean }
 export interface AppState extends Preferences {
@@ -25,7 +26,10 @@ function readPreferences(storage?: StorageAdapter): Preferences {
     return { soundEnabled: data.soundEnabled, instructionsCompleted: data.instructionsCompleted };
   } catch { return defaults; }
 }
-export function createAppStore(storage: StorageAdapter | undefined = browserStorage()) {
+export function createAppStore(
+  storage: StorageAdapter | undefined = browserStorage(),
+  challengeIds: readonly ChallengeId[] = demoChallenges.map((challenge) => challenge.id),
+) {
   const store = createStore<AppState>((set) => ({
     ...readPreferences(storage), completedChallengeIds: [], allDemoChallengesCompleted: false,
     toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
@@ -33,7 +37,10 @@ export function createAppStore(storage: StorageAdapter | undefined = browserStor
     completeChallenge: (id) => set((state) => {
       if (state.completedChallengeIds.includes(id)) return state;
       const completedChallengeIds = [...state.completedChallengeIds, id];
-      return { completedChallengeIds, allDemoChallengesCompleted: completedChallengeIds.length === 3 };
+      return {
+        completedChallengeIds,
+        allDemoChallengesCompleted: challengeIds.length > 0 && challengeIds.every((challengeId) => completedChallengeIds.includes(challengeId)),
+      };
     }),
   }));
   store.subscribe(({ soundEnabled, instructionsCompleted }) => {

@@ -85,7 +85,14 @@ h2 { font-size: 18px; font-weight: 800; line-height: 1.35; }
 .sector-name { font-size: 11px; margin: 3px 0 0; font-weight: 700; }
 .sector h2 { margin: 0 0 8px; font-size: 19px; }
 .sector > p { color: #425d66; font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
-.sector-play { width: 100%; font-size: 12px; }
+.sector-phases { list-style: none; padding: 0; margin: 18px 0 0; border-top: 1px solid #ced2c9; }
+.sector-phase { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 3px 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid #ced2c9; }
+.sector-phase-number { grid-row: span 2; display: grid; place-items: center; width: 27px; height: 27px; background: #e7e2d4; border: 1px solid #aeb8ac; font: 700 10px monospace; }
+.sector-phase-status { color: #49636a; font-size: 10px; font-weight: 700; }
+.sector-phase-action { justify-self: start; padding: 0; border: 0; background: transparent; color: #173f4b; font-size: 12px; font-weight: 800; }
+.sector-phase-action:not(:disabled):hover { text-decoration: underline; }
+.sector-phase-action:disabled { color: #5b7072; font-size: 11px; }
+.unavailable-challenge { padding-bottom: 24px; }
 .coming-soon { display: inline-flex; align-items: center; gap: 7px; font-size: 10px; font-weight: 700; border-top: 1px solid #ced2c9; width: 100%; padding-top: 12px; color: #49636a; }
 .game-preview { margin-top: 30px; border: 2px solid #45606e; padding: 16px; background: #173340; }
 .preview-topline { display: flex; justify-content: space-between; gap: 8px; color: #71dfda; margin-bottom: 14px; }
