@@ -87,6 +87,8 @@ entrega futura confirmar essa necessidade.
 
 Consulte o [guia de elaboração das fases](docs/fluxo-elaboracao-fases.md) para
 usar o modelo completo, os critérios de revisão e um exemplo preenchido.
+As propostas individuais em Markdown ficam na pasta [fases](fases/); use o
+[modelo](fases/MODELO.md) para criar um arquivo por fase.
 
 1. A pessoa responsável pelo princípio elabora a proposta usando o modelo abaixo.
 2. Outra pessoa revisa o conteúdo matemático, o gabarito e o cálculo passo a passo.

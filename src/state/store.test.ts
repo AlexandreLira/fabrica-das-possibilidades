@@ -33,6 +33,15 @@ it('acompanha conclusões apenas durante a sessão e ignora repetições', () =>
   expect(persisted).toEqual({ version: 1, soundEnabled: true, instructionsCompleted: false });
   expect(createAppStore(storage).getState().completedChallengeIds).toEqual([]);
 });
+
+it('calcula conclusão usando o catálogo completo de fases, não um total fixo', () => {
+  const ids = ['adicao-1', 'adicao-2', 'multiplicacao-1', 'multiplicacao-2'] as const;
+  const store = createAppStore(undefined, ids);
+  ids.slice(0, 3).forEach((id) => store.getState().completeChallenge(id));
+  expect(store.getState().allDemoChallengesCompleted).toBe(false);
+  store.getState().completeChallenge(ids[3]);
+  expect(store.getState().allDemoChallengesCompleted).toBe(true);
+});
 it.each(['{bad', 'null', JSON.stringify({ version: 1, soundEnabled: 'yes', instructionsCompleted: true }), JSON.stringify({ version: 999, soundEnabled: false })])('recupera armazenamento inválido %s', (data) => {
   const storage = memoryStorage(); storage.setItem(STORAGE_KEY, data);
   expect(createAppStore(storage).getState().soundEnabled).toBe(true);

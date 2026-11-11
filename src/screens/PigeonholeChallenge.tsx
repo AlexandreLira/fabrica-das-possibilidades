@@ -18,7 +18,6 @@ export function PigeonholeChallenge() {
   const [lastBoxIndex, setLastBoxIndex] = useState<BoxIndex | null>(null);
   const [gameRun, setGameRun] = useState(0);
   const completeChallenge = useStore(appStore, (store) => store.completeChallenge);
-  const completedChallengeIds = useStore(appStore, (store) => store.completedChallengeIds);
 
   const placeItem = (boxIndex: BoxIndex) => {
     if (state.remaining === 0 || state.completed) return;
@@ -39,7 +38,7 @@ export function PigeonholeChallenge() {
     dispatch({ type: 'confirm-answer' });
     bridge.emit('challenge:answer-evaluated', { answer: state.selectedAnswer, correct });
     if (correct) completeChallenge(pigeonholeStorageChallenge.id);
-    const completesDemo = completedChallengeIds.includes('adicao-1') && completedChallengeIds.includes('multiplicacao-1');
+    const completesDemo = appStore.getState().allDemoChallengesCompleted;
     playFeedback(correct ? (completesDemo ? 'complete' : 'success') : 'error');
   };
 

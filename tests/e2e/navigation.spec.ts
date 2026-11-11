@@ -21,6 +21,22 @@ test('navega, lembra o som e mantém apenas um canvas após reentradas', async (
   await expect(page.getByRole('heading', { name: 'Fábrica das Possibilidades' })).toBeVisible();
 });
 
+test('o mapa lista cinco fases por módulo e só libera as três demonstrações', async ({ page }) => {
+  await page.goto('/#/setores');
+  await expect(page.locator('.sector')).toHaveCount(3);
+  await expect(page.locator('.sector-phase')).toHaveCount(15);
+  await expect(page.locator('.sector-phase a')).toHaveCount(3);
+  await expect(page.locator('.sector-phase button:disabled')).toHaveCount(12);
+  await expect(page.getByRole('link', { name: 'Jogar fase de Adição' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Fase 2 de Adição — em desenvolvimento' })).toBeDisabled();
+});
+
+test('hash válido de fase futura abre o estado em desenvolvimento', async ({ page }) => {
+  await page.goto('/#/desafios/adicao-2');
+  await expect(page.getByRole('heading', { name: 'Fase em desenvolvimento' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Voltar ao mapa' })).toBeVisible();
+});
+
 test('joga a fase de adição com dica, tentativas e conclusão', async ({ page }) => {
   await page.goto('/#/setores');
   await page.getByRole('link', { name: 'Jogar fase de Adição' }).click();
