@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest';
+import type { ChallengeId } from '../content/sectors';
 import { createAppStore, STORAGE_KEY } from './store';
 function memoryStorage() {
   const data = new Map<string, string>();
@@ -13,7 +14,7 @@ it('restaura preferências e tutorial sem inventar progresso', () => {
   expect(restored.soundEnabled).toBe(false);
   expect(restored.instructionsCompleted).toBe(true);
   expect(restored.completedChallengeIds).toEqual([]);
-  expect(restored.allDemoChallengesCompleted).toBe(false);
+  expect(restored.allChallengesCompleted).toBe(false);
 });
 
 it('acompanha conclusões apenas durante a sessão e ignora repetições', () => {
@@ -24,10 +25,13 @@ it('acompanha conclusões apenas durante a sessão e ignora repetições', () =>
   store.getState().completeChallenge('multiplicacao-1');
   expect(store.getState()).toMatchObject({
     completedChallengeIds: ['adicao-1', 'multiplicacao-1'],
-    allDemoChallengesCompleted: false,
+    allChallengesCompleted: false,
   });
   store.getState().completeChallenge('casas-de-pombo-1');
-  expect(store.getState().allDemoChallengesCompleted).toBe(true);
+  expect(store.getState().allChallengesCompleted).toBe(false);
+  ['adicao-2', 'adicao-3', 'multiplicacao-2', 'multiplicacao-3', 'casas-de-pombo-2', 'casas-de-pombo-3']
+    .forEach((id) => store.getState().completeChallenge(id as ChallengeId));
+  expect(store.getState().allChallengesCompleted).toBe(true);
 
   const persisted = JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}');
   expect(persisted).toEqual({ version: 1, soundEnabled: true, instructionsCompleted: false });
@@ -38,9 +42,9 @@ it('calcula conclusão usando o catálogo completo de fases, não um total fixo'
   const ids = ['adicao-1', 'adicao-2', 'multiplicacao-1', 'multiplicacao-2'] as const;
   const store = createAppStore(undefined, ids);
   ids.slice(0, 3).forEach((id) => store.getState().completeChallenge(id));
-  expect(store.getState().allDemoChallengesCompleted).toBe(false);
+  expect(store.getState().allChallengesCompleted).toBe(false);
   store.getState().completeChallenge(ids[3]);
-  expect(store.getState().allDemoChallengesCompleted).toBe(true);
+  expect(store.getState().allChallengesCompleted).toBe(true);
 });
 it.each(['{bad', 'null', JSON.stringify({ version: 1, soundEnabled: 'yes', instructionsCompleted: true }), JSON.stringify({ version: 999, soundEnabled: false })])('recupera armazenamento inválido %s', (data) => {
   const storage = memoryStorage(); storage.setItem(STORAGE_KEY, data);

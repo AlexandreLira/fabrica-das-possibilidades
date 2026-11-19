@@ -12,6 +12,7 @@ import { Completion } from '../screens/Completion';
 import { ChallengeUnavailable } from '../screens/ChallengeUnavailable';
 import { UpdateNotice } from './UpdateNotice';
 import type { ChallengeId } from '../content/sectors';
+import { getChallengeById } from '../content/challenges';
 export function App() {
   const route = useRoute(); const previousRoute = useRef<typeof route | null>(null);
   const sound = useStore(appStore, (state) => state.soundEnabled);
@@ -35,10 +36,11 @@ export function App() {
           : route === 'completion' ? <Completion />
             : route.startsWith('challenge:') ? (() => {
               const id = route.slice('challenge:'.length) as ChallengeId;
-              return id === 'adicao-1' ? <AdditionChallenge />
-                : id === 'multiplicacao-1' ? <MultiplicationChallenge />
-                  : id === 'casas-de-pombo-1' ? <PigeonholeChallenge />
-                    : <ChallengeUnavailable id={id} />;
+              const challenge = getChallengeById(id);
+              if (!challenge) return <ChallengeUnavailable id={id} />;
+              return challenge.principle === 'addition' ? <AdditionChallenge key={challenge.id} challenge={challenge} />
+                : challenge.principle === 'multiplication' ? <MultiplicationChallenge key={challenge.id} challenge={challenge} />
+                  : <PigeonholeChallenge key={challenge.id} challenge={challenge} />;
             })() : <Home />}</main>
     <footer className="app-footer"><span aria-hidden="true">◆</span> FEITO DE IDEIAS E POSSIBILIDADES <span aria-hidden="true">◆</span></footer>
     {import.meta.env.PROD && <UpdateNotice />}

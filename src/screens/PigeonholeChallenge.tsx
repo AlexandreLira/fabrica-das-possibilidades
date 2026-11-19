@@ -1,25 +1,36 @@
 import { useReducer, useState } from 'react';
 import { useStore } from 'zustand';
-import { pigeonholeStorageChallenge } from '../content/challenges';
+import type { PigeonholeChallengeDefinition } from '../content/challenges';
+import { getNextChallenge } from '../content/challenges';
 import { playFeedback } from '../audio/effects';
 import { ChallengeGame } from '../game/ChallengeGame';
 import { createGameBridge } from '../game/bridge/events';
 import { appStore } from '../state/store';
 import { AnswerPanel, ChallengeIntro, CompletionActions } from './ChallengeComponents';
 import {
-  pigeonholeChallengeInitialState,
+  createPigeonholeChallengeState,
   reducePigeonholeChallenge,
-  type BoxIndex,
 } from './pigeonholeChallengeState';
 
-export function PigeonholeChallenge() {
-  const [state, dispatch] = useReducer(reducePigeonholeChallenge, pigeonholeChallengeInitialState);
+function pluralize(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+export function PigeonholeChallenge({ challenge }: { challenge: PigeonholeChallengeDefinition }) {
+  const [state, dispatch] = useReducer(
+    (current: ReturnType<typeof createPigeonholeChallengeState>, action: Parameters<typeof reducePigeonholeChallenge>[1]) => reducePigeonholeChallenge(current, action, challenge),
+    challenge,
+    createPigeonholeChallengeState,
+  );
   const [bridge] = useState(createGameBridge);
-  const [lastBoxIndex, setLastBoxIndex] = useState<BoxIndex | null>(null);
+  const [lastBoxIndex, setLastBoxIndex] = useState<number | null>(null);
   const [gameRun, setGameRun] = useState(0);
   const completeChallenge = useStore(appStore, (store) => store.completeChallenge);
+  const nextChallenge = getNextChallenge(challenge.id);
+  const boxNames = challenge.boxNames ?? Array.from({ length: challenge.boxes }, (_, index) => `${challenge.boxLabel} ${index + 1}`);
+  const boxNameAt = (index: number) => boxNames[index] ?? `${challenge.boxLabel} ${index + 1}`;
 
-  const placeItem = (boxIndex: BoxIndex) => {
+  const placeItem = (boxIndex: number) => {
     if (state.remaining === 0 || state.completed) return;
     dispatch({ type: 'place-item', boxIndex });
     setLastBoxIndex(boxIndex);
@@ -29,91 +40,104 @@ export function PigeonholeChallenge() {
   const resetDistribution = () => {
     dispatch({ type: 'reset-distribution' });
     setLastBoxIndex(null);
-    bridge.emit('challenge:distribution-reset', undefined);
+    bridge.emit('challenge:distribution-reset', { items: challenge.items });
   };
 
   const confirmAnswer = () => {
     if (state.selectedAnswer === null) return;
-    const correct = state.selectedAnswer === pigeonholeStorageChallenge.correctAnswer;
+    const correct = state.selectedAnswer === challenge.correctAnswer;
     dispatch({ type: 'confirm-answer' });
     bridge.emit('challenge:answer-evaluated', { answer: state.selectedAnswer, correct });
-    if (correct) completeChallenge(pigeonholeStorageChallenge.id);
-    const completesDemo = appStore.getState().allDemoChallengesCompleted;
-    playFeedback(correct ? (completesDemo ? 'complete' : 'success') : 'error');
+    if (correct) completeChallenge(challenge.id);
+    playFeedback(correct ? (appStore.getState().allChallengesCompleted ? 'complete' : 'success') : 'error');
   };
 
+  const balancedDistribution = Array.from({ length: challenge.boxes }, (_, index) =>
+    Math.floor(challenge.items / challenge.boxes) + (index < challenge.items % challenge.boxes ? 1 : 0));
+  const balancedText = balancedDistribution.join('–');
+  const boxTitle = (boxName: string, index: number) => challenge.boxNames
+    ? `${challenge.boxLabel === 'categoria' ? 'Categoria ' : ''}${boxName}`
+    : `${challenge.boxLabel.charAt(0).toLocaleUpperCase('pt-BR')}${challenge.boxLabel.slice(1)} ${index + 1}`;
+  const boxArticle = challenge.boxLabel === 'compartimento' ? 'no' : 'na';
+
   return <>
-    <ChallengeIntro challenge={pigeonholeStorageChallenge} />
+    <ChallengeIntro challenge={challenge} />
     <ChallengeGame
       key={gameRun}
       kind="pigeonhole"
       bridge={bridge}
+      challenge={challenge}
       counts={state.counts}
       remaining={state.remaining}
       lastBoxIndex={lastBoxIndex}
       completed={state.completed}
     />
-    <section className="storage-board" aria-labelledby="storage-heading">
+    <section className="storage-board" aria-labelledby={`${challenge.id}-storage-heading`}>
       <div className="storage-heading">
-        <h2 id="storage-heading">Distribua as peças</h2>
-        <strong aria-live="polite">{state.remaining} {state.remaining === 1 ? 'peça restante' : 'peças restantes'}</strong>
+        <h2 id={`${challenge.id}-storage-heading`}>Distribua {challenge.itemPlural}</h2>
+        <strong aria-live="polite">{pluralize(state.remaining, `${challenge.itemLabel} restante`, `${challenge.itemPlural} restantes`)}</strong>
       </div>
       <div className="box-grid">
         {state.counts.map((count, index) => {
-          const countLabel = `${count} ${count === 1 ? 'peça' : 'peças'}`;
-          const actionLabel = state.remaining === 0 ? 'Distribuição concluída' : `Colocar peça na caixa ${index + 1}`;
+          const itemCountLabel = pluralize(count, challenge.itemLabel, challenge.itemPlural);
+          const boxName = boxNameAt(index);
+          const actionTarget = challenge.boxNames
+            ? `${challenge.boxLabel} ${boxName}`
+            : boxName.toLocaleLowerCase('pt-BR');
+          const actionLabel = state.remaining === 0
+            ? 'Distribuição concluída'
+            : `Colocar ${challenge.itemLabel} ${boxArticle} ${actionTarget}`;
           return <button
             type="button"
             key={index}
-            onClick={() => placeItem(index as BoxIndex)}
+            onClick={() => placeItem(index)}
             disabled={state.remaining === 0 || state.completed}
-            aria-label={`Caixa ${index + 1}: ${countLabel}. ${actionLabel}`}
+            aria-label={`${boxTitle(boxName, index)}: ${itemCountLabel}. ${actionLabel}`}
           >
-            <span>Caixa {index + 1}</span>
-            <b>{'■ '.repeat(count).trim() || 'vazia'}</b>
-            <strong>{countLabel}</strong>
+            <span>{boxTitle(boxName, index)}</span>
+            <b>{'■ '.repeat(Math.min(count, 10)).trim() || 'vazia'}</b>
+            <strong>{itemCountLabel}</strong>
           </button>;
         })}
       </div>
       <p className="distribution-summary" aria-live="polite" aria-atomic="true">
-        Distribuição atual: {state.counts.map((count, index) => `caixa ${index + 1} com ${count} ${count === 1 ? 'peça' : 'peças'}`).join('; ')}.
+        Distribuição atual: {state.counts.map((count, index) => `${boxTitle(boxNameAt(index), index).toLocaleLowerCase('pt-BR')} com ${pluralize(count, challenge.itemLabel, challenge.itemPlural)}`).join('; ')}.
       </p>
       <button
         className="reset-distribution"
         type="button"
         onClick={resetDistribution}
-        disabled={state.completed || state.remaining === pigeonholeStorageChallenge.items}
+        disabled={state.completed || state.remaining === challenge.items}
       >Reiniciar distribuição</button>
     </section>
 
     <AnswerPanel
-      challenge={pigeonholeStorageChallenge}
+      challenge={challenge}
       ready={state.remaining === 0}
-      readyMessage="Distribua as sete peças para liberar as respostas."
+      readyMessage={`Distribua ${challenge.items} ${challenge.itemPlural} para liberar as respostas.`}
       selectedAnswer={state.selectedAnswer}
       hintVisible={state.hintVisible}
       feedback={state.feedback}
       completed={state.completed}
-      prompt={<p className="challenge-equation">⌈7 ÷ 3⌉ = ?</p>}
+      prompt={<p className="challenge-equation">{challenge.equation}</p>}
       onSelect={(answer) => dispatch({ type: 'select-answer', answer })}
       onHint={() => dispatch({ type: 'show-hint' })}
       onConfirm={confirmAnswer}
     />
 
-    {state.completed && <>
-      <div className="limit-distribution">
-        <strong>Distribuição-limite: 3–2–2</strong>
-        <p>3–2–2 mostra que não podemos garantir 4, embora sempre possamos garantir pelo menos 3 em alguma caixa.</p>
-      </div>
-      <CompletionActions
-        nextHref="#/conclusao"
-        nextLabel="Ver resumo final"
-        onReplay={() => {
-          dispatch({ type: 'reset' });
-          setLastBoxIndex(null);
-          setGameRun((run) => run + 1);
-        }}
-      />
-    </>}
+    {state.completed && <div className="limit-distribution">
+      <strong>Distribuição-limite: {balancedText}</strong>
+      <p>{balancedText} mostra que não podemos garantir {challenge.correctAnswer + 1}, embora sempre possamos garantir pelo menos {challenge.correctAnswer} em algum grupo.</p>
+    </div>}
+
+    {state.completed && <CompletionActions
+      nextHref={nextChallenge ? `#/desafios/${nextChallenge.id}` : '#/conclusao'}
+      nextLabel={nextChallenge ? `Continuar para ${nextChallenge.title}` : 'Ver resumo final'}
+      onReplay={() => {
+        dispatch({ type: 'reset' });
+        setLastBoxIndex(null);
+        setGameRun((run) => run + 1);
+      }}
+    />}
   </>;
 }

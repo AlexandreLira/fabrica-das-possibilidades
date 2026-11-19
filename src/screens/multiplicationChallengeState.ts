@@ -1,12 +1,10 @@
 import {
   multiplicationRobotChallenge,
-  type RobotAntennaId,
-  type RobotBodyId,
+  type MultiplicationChallengeDefinition,
 } from '../content/challenges';
 
 export interface MultiplicationChallengeState {
-  bodyId: RobotBodyId | null;
-  antennaId: RobotAntennaId | null;
+  selections: Readonly<Record<string, string>>;
   selectedAnswer: number | null;
   hintVisible: boolean;
   feedback: string;
@@ -14,49 +12,51 @@ export interface MultiplicationChallengeState {
 }
 
 export type MultiplicationChallengeAction =
-  | { type: 'select-body'; bodyId: RobotBodyId }
-  | { type: 'select-antenna'; antennaId: RobotAntennaId }
+  | { type: 'select-option'; stageId: string; optionId: string }
   | { type: 'select-answer'; answer: number }
   | { type: 'show-hint' }
   | { type: 'confirm-answer' }
   | { type: 'reset' };
 
-export const multiplicationChallengeInitialState: MultiplicationChallengeState = {
-  bodyId: null,
-  antennaId: null,
-  selectedAnswer: null,
-  hintVisible: false,
-  feedback: '',
-  completed: false,
-};
+export function createMultiplicationChallengeState(): MultiplicationChallengeState {
+  return { selections: {}, selectedAnswer: null, hintVisible: false, feedback: '', completed: false };
+}
+
+export const multiplicationChallengeInitialState = createMultiplicationChallengeState();
 
 export function reduceMultiplicationChallenge(
   state: MultiplicationChallengeState,
   action: MultiplicationChallengeAction,
+  challenge: MultiplicationChallengeDefinition = multiplicationRobotChallenge,
 ): MultiplicationChallengeState {
-  if (action.type === 'reset') return multiplicationChallengeInitialState;
+  if (action.type === 'reset') return createMultiplicationChallengeState();
   if (state.completed) return state;
 
   switch (action.type) {
-    case 'select-body':
-      return { ...state, bodyId: action.bodyId, feedback: '' };
-    case 'select-antenna':
-      return { ...state, antennaId: action.antennaId, feedback: '' };
+    case 'select-option': {
+      const stage = challenge.stages.find((candidate) => candidate.id === action.stageId);
+      if (!stage?.options.some((option) => option.id === action.optionId)) return state;
+      return {
+        ...state,
+        selections: { ...state.selections, [action.stageId]: action.optionId },
+        feedback: '',
+      };
+    }
     case 'select-answer':
-      return state.bodyId && state.antennaId
-        ? { ...state, selectedAnswer: action.answer, feedback: '' }
-        : state;
+      return challenge.stages.some((stage) => !state.selections[stage.id])
+        ? state
+        : { ...state, selectedAnswer: action.answer, feedback: '' };
     case 'show-hint':
       return { ...state, hintVisible: true };
     case 'confirm-answer': {
       if (state.selectedAnswer === null) return state;
-      if (state.selectedAnswer === multiplicationRobotChallenge.correctAnswer) {
-        return { ...state, completed: true, feedback: multiplicationRobotChallenge.successExplanation };
+      if (state.selectedAnswer === challenge.correctAnswer) {
+        return { ...state, completed: true, feedback: challenge.successExplanation };
       }
       return {
         ...state,
         selectedAnswer: null,
-        feedback: multiplicationRobotChallenge.feedback[state.selectedAnswer] ?? 'Experimente contar todas as combinações novamente.',
+        feedback: challenge.feedback[state.selectedAnswer] ?? 'Experimente contar todas as combinações novamente.',
       };
     }
   }

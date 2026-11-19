@@ -22,11 +22,16 @@ async function distribute322(page: import('@playwright/test').Page) {
   }
 }
 
-test('mapa oferece uma fase funcional em cada setor', async ({ page }) => {
+async function chooseAnswer(page: import('@playwright/test').Page, answer: number) {
+  await page.locator('.answer-options label').filter({ hasText: String(answer) }).click();
+}
+
+test('mapa oferece três fases funcionais em cada setor', async ({ page }) => {
   await page.goto('/#/setores');
   await expect(page.getByRole('link', { name: 'Jogar fase de Adição' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Jogar fase de Multiplicação' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Jogar fase de Casas de Pombo' })).toBeVisible();
+  await expect(page.locator('.sector-phase a')).toHaveCount(9);
 });
 
 test('monta um robô, explica o erro e apresenta as seis combinações', async ({ page }) => {
@@ -47,7 +52,7 @@ test('monta um robô, explica o erro e apresenta as seis combinações', async (
   await page.locator('.answer-options label').filter({ hasText: '6' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toContainText('3 × 2 = 6');
-  await expect(page.getByRole('list', { name: 'Seis modelos possíveis' }).getByRole('listitem')).toHaveCount(6);
+  await expect(page.getByRole('list', { name: '6 modelos possíveis' }).getByRole('listitem')).toHaveCount(6);
 
   await page.getByRole('button', { name: 'Jogar novamente' }).click();
   await expect(page.getByRole('button', { name: 'Carcaça ciano' })).toHaveAttribute('aria-pressed', 'false');
@@ -81,18 +86,49 @@ test('comunica a distribuição atual nos controles acessíveis das caixas', asy
   await expect(page.getByText('Distribuição atual: caixa 1 com 1 peça; caixa 2 com 0 peças; caixa 3 com 0 peças.')).toBeVisible();
 });
 
-test('conclui a sequência e mostra o resumo dos três princípios', async ({ page }) => {
+test('conclui as nove fases em sequência e mostra o resumo final', async ({ page }) => {
   await page.goto('/#/desafios/adicao-1');
   await completeAddition(page);
-  await page.getByRole('link', { name: 'Continuar para Multiplicação' }).click();
+  await page.getByRole('link', { name: 'Continuar para Separação de Produtos' }).click();
+  for (const group of ['produtos vermelhos', 'produtos azuis']) await page.getByRole('button', { name: new RegExp(`Examinar ${group}`, 'i') }).click();
+  await chooseAnswer(page, 7);
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para Escolha de Materiais' }).click();
+  for (const group of ['Ferramentas', 'Peças metálicas', 'Componentes eletrônicos']) await page.getByRole('button', { name: new RegExp(`Examinar ${group}`, 'i') }).click();
+  await chooseAnswer(page, 12);
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para Monte o robô' }).click();
   await completeMultiplication(page);
-  await page.getByRole('link', { name: 'Continuar para Casas de Pombo' }).click();
+  await page.getByRole('link', { name: 'Continuar para Montagem de Robôs' }).click();
+  await page.getByRole('group', { name: 'Modelo de corpo' }).getByRole('button', { name: 'Corpo 4' }).click();
+  await page.getByRole('group', { name: 'Modelo de rodas' }).getByRole('button', { name: 'Rodas 3' }).click();
+  await chooseAnswer(page, 12);
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para Caminhos da Fábrica' }).click();
+  for (const stage of ['Setor 1', 'Setor 2', 'Setor 3']) await page.getByRole('group', { name: stage }).getByRole('button').first().click();
+  await chooseAnswer(page, 12);
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para Organize o depósito' }).click();
   await distribute322(page);
   await page.locator('.answer-options label').filter({ hasText: '3' }).click();
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para O Armazém no Limite' }).click();
+  const firstCompartment = page.getByRole('button', { name: /Colocar caixa no compartimento 1/ });
+  for (let count = 0; count < 13; count += 1) await firstCompartment.click();
+  await chooseAnswer(page, 3);
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para O Controle de Qualidade' }).click();
+  const categories = ['Elétrico', 'Mecânico', 'Acabamento', 'Conexão', 'Montagem', 'Isolamento'];
+  for (let count = 0; count < 31; count += 1) {
+    const category = categories[count % categories.length]!;
+    await page.getByRole('button', { name: new RegExp(`Colocar componente na categoria ${category}`) }).click();
+  }
+  await chooseAnswer(page, 6);
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await page.getByRole('link', { name: 'Ver resumo final' }).click();
 
   await expect(page.getByRole('heading', { name: 'Fábrica em funcionamento!' })).toBeFocused();
+  await expect(page.getByText(/concluiu todas as nove fases disponíveis/)).toBeVisible();
   await expect(page.getByText('OU entre grupos distintos')).toBeVisible();
   await expect(page.getByText('E entre etapas independentes')).toBeVisible();
   await expect(page.getByText('ocupação mínima garantida')).toBeVisible();
@@ -111,21 +147,21 @@ test('mantém Multiplicação e Casas de Pombo jogáveis sem Phaser', async ({ p
   await expect(page.getByText('A animação da fábrica está indisponível.')).toBeVisible();
   await expect(page.locator('.challenge-static')).toBeVisible();
   await completeMultiplication(page);
-  await expect(page.getByRole('link', { name: 'Continuar para Casas de Pombo' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Continuar para Montagem de Robôs' })).toBeVisible();
 
   await page.goto('/#/desafios/casas-de-pombo-1');
   await expect(page.getByText('A animação da fábrica está indisponível.')).toBeVisible();
   await distribute322(page);
   await page.locator('.answer-options label').filter({ hasText: '3' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('link', { name: 'Ver resumo final' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Continuar para O Armazém no Limite' })).toBeVisible();
 });
 
 for (const width of [320, 390]) {
   test(`mantém todas as fases sem rolagem horizontal em ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    for (const route of ['adicao-1', 'multiplicacao-1', 'casas-de-pombo-1']) {
+    for (const route of ['adicao-1', 'adicao-2', 'adicao-3', 'multiplicacao-1', 'multiplicacao-2', 'multiplicacao-3', 'casas-de-pombo-1', 'casas-de-pombo-2', 'casas-de-pombo-3']) {
       await page.goto(`/#/desafios/${route}`);
       await expect(page.locator('h1')).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -147,7 +183,7 @@ test('conclui Multiplicação e Casas de Pombo usando controles de teclado', asy
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Confirmar' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('link', { name: 'Continuar para Casas de Pombo' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Continuar para Montagem de Robôs' })).toBeVisible();
 
   await page.goto('/#/desafios/casas-de-pombo-1');
   const firstBox = page.getByRole('button', { name: 'Colocar peça na caixa 1' });
@@ -157,5 +193,5 @@ test('conclui Multiplicação e Casas de Pombo usando controles de teclado', asy
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Confirmar' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('link', { name: 'Ver resumo final' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Continuar para O Armazém no Limite' })).toBeVisible();
 });

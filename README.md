@@ -3,9 +3,9 @@
 Fundação de um jogo educativo mobile-first sobre os princípios da Adição, da
 Multiplicação e das Casas de Pombo. Interface em português, para Ensino Médio.
 
-Esta versão demonstrável contém início, tutorial, mapa, diálogos do B.O.T. e exatamente
-três fases completas: uma de Adição, uma de Multiplicação e uma de Casas de Pombo.
-Cada fase oferece interação, dica, novas tentativas, feedback visual e sonoro,
+Esta versão contém início, tutorial, mapa, diálogos do B.O.T. e nove fases
+completas: três de Adição, três de Multiplicação e três de Casas de Pombo. Cada
+fase oferece interação, dica, novas tentativas, feedback visual e sonoro,
 explicação matemática, animação Phaser e alternativa estática sem o motor.
 Não há backend, autenticação, banco remoto, telemetria ou serviços externos em execução.
 O PDF original foi preservado.
@@ -57,15 +57,22 @@ npm run preview
 A saída está em `dist/`; esta entrega não faz publicação automática. A aplicação usa
 caminhos relativos e rotas hash, dispensando regras de reescrita no servidor estático.
 
-## Fases demonstráveis
+## Fases disponíveis
 
 - `#/desafios/adicao-1`: examinar duas rotas e aplicar `3 + 4 = 7`.
+- `#/desafios/adicao-2`: separar produtos e aplicar `4 + 3 = 7`.
+- `#/desafios/adicao-3`: escolher materiais e aplicar `5 + 4 + 3 = 12`.
 - `#/desafios/multiplicacao-1`: combinar três carcaças com duas antenas em `3 × 2 = 6`.
+- `#/desafios/multiplicacao-2`: montar robôs com quatro corpos e três modelos de rodas em `4 × 3 = 12`.
+- `#/desafios/multiplicacao-3`: contar caminhos em três setores com `2 × 3 × 2 = 12`.
 - `#/desafios/casas-de-pombo-1`: distribuir sete peças em três caixas e garantir `⌈7 ÷ 3⌉ = 3`.
-- `#/conclusao`: revisar os três princípios após concluir a sequência.
+- `#/desafios/casas-de-pombo-2`: distribuir treze caixas em cinco compartimentos e garantir `⌈13 ÷ 5⌉ = 3`.
+- `#/desafios/casas-de-pombo-3`: distribuir 31 componentes por seis categorias e garantir `⌈31 ÷ 6⌉ = 6`.
+- `#/conclusao`: revisar os três princípios depois de concluir as nove fases.
 
-As fases ficam abertas no mapa. “Continuar” segue a ordem acima, e “Jogar novamente”
-reinicia a mecânica sem apagar a marca de conclusão da sessão.
+As nove fases disponíveis ficam abertas no mapa; as fases 4 e 5 de cada módulo
+continuam em desenvolvimento. “Continuar” percorre a sequência acima, e “Jogar
+novamente” reinicia a mecânica sem apagar a marca de conclusão da sessão.
 
 ## Frentes e entregas
 
@@ -177,7 +184,7 @@ garantido pela configuração pedagógica de cada futuro desafio.
 Chave `fabrica-possibilidades:v1`, formato `{ version: 1, soundEnabled,
 instructionsCompleted }`. Tipos inválidos, JSON corrompido e versões desconhecidas
 voltam aos padrões. Falha de leitura/gravação mantém a sessão em memória. A conclusão
-das três fases existe apenas durante a sessão atual e não entra no `localStorage`;
+das nove fases existe apenas durante a sessão atual e não entra no `localStorage`;
 recarregar reinicia esse progresso. Não há pontuação.
 
 O service worker registra apenas em produção, cacheia app, motor e recursos locais,

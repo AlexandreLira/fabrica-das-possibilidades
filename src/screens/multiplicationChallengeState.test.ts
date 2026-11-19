@@ -6,30 +6,28 @@ import {
 
 describe('estado da fase de multiplicação', () => {
   it('só libera respostas depois de escolher uma carcaça e uma antena', () => {
-    const withBody = reduceMultiplicationChallenge(multiplicationChallengeInitialState, { type: 'select-body', bodyId: 'ciano' });
+    const withBody = reduceMultiplicationChallenge(multiplicationChallengeInitialState, { type: 'select-option', stageId: 'carcaca', optionId: 'ciano' });
     expect(reduceMultiplicationChallenge(withBody, { type: 'select-answer', answer: 6 }).selectedAnswer).toBeNull();
 
-    const ready = reduceMultiplicationChallenge(withBody, { type: 'select-antenna', antennaId: 'haste' });
+    const ready = reduceMultiplicationChallenge(withBody, { type: 'select-option', stageId: 'antena', optionId: 'haste' });
     expect(reduceMultiplicationChallenge(ready, { type: 'select-answer', answer: 6 }).selectedAnswer).toBe(6);
   });
 
   it('mantém a montagem depois de um erro e permite outra tentativa', () => {
     const ready = {
       ...multiplicationChallengeInitialState,
-      bodyId: 'ciano' as const,
-      antennaId: 'haste' as const,
+      selections: { carcaca: 'ciano', antena: 'haste' },
       selectedAnswer: 5,
     };
     const result = reduceMultiplicationChallenge(ready, { type: 'confirm-answer' });
-    expect(result).toMatchObject({ bodyId: 'ciano', antennaId: 'haste', selectedAnswer: null, completed: false });
+    expect(result).toMatchObject({ selections: { carcaca: 'ciano', antena: 'haste' }, selectedAnswer: null, completed: false });
     expect(result.feedback).toContain('Somar');
   });
 
   it('conclui com seis e reinicia a interação', () => {
     const ready = {
       ...multiplicationChallengeInitialState,
-      bodyId: 'amarela' as const,
-      antennaId: 'dupla' as const,
+      selections: { carcaca: 'amarela', antena: 'dupla' },
       selectedAnswer: 6,
     };
     const completed = reduceMultiplicationChallenge(ready, { type: 'confirm-answer' });
