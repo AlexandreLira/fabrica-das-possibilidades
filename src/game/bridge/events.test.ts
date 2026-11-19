@@ -12,44 +12,44 @@ it('entrega eventos apenas aos ouvintes ativos e permite limpar a sessão', () =
 
 it('emite eventos da fase apenas enquanto os listeners estão inscritos', () => {
   const bridge = createGameBridge();
-  const routes: string[] = [];
+  const groups: string[] = [];
   const answers: Array<{ answer: number; correct: boolean }> = [];
   let completions = 0;
 
-  const offRoute = bridge.on('challenge:route-revealed', ({ routeId }) => routes.push(routeId));
+  const offGroup = bridge.on('challenge:group-revealed', ({ groupId }) => groups.push(groupId));
   const offAnswer = bridge.on('challenge:answer-evaluated', (result) => answers.push(result));
   const offCompleted = bridge.on('challenge:completed', () => { completions += 1; });
 
-  bridge.emit('challenge:route-revealed', { routeId: 'local' });
+  bridge.emit('challenge:group-revealed', { groupId: 'local' });
   bridge.emit('challenge:answer-evaluated', { answer: 12, correct: false });
   bridge.emit('challenge:completed', undefined);
-  offRoute(); offAnswer(); offCompleted();
-  bridge.emit('challenge:route-revealed', { routeId: 'express' });
+  offGroup(); offAnswer(); offCompleted();
+  bridge.emit('challenge:group-revealed', { groupId: 'express' });
   bridge.emit('challenge:answer-evaluated', { answer: 7, correct: true });
   bridge.emit('challenge:completed', undefined);
 
-  expect(routes).toEqual(['local']);
+  expect(groups).toEqual(['local']);
   expect(answers).toEqual([{ answer: 12, correct: false }]);
   expect(completions).toBe(1);
 });
 
 it('tipa e remove os eventos visuais de montagem e distribuição', () => {
   const bridge = createGameBridge();
-  const robots: string[] = [];
+  const stages: string[] = [];
   const distributions: string[] = [];
   let resets = 0;
 
-  const offRobot = bridge.on('challenge:robot-configured', ({ bodyId, antennaId }) => robots.push(`${bodyId}:${antennaId}`));
+  const offStage = bridge.on('challenge:stage-selected', ({ stageId, optionId }) => stages.push(`${stageId}:${optionId}`));
   const offItem = bridge.on('challenge:item-placed', ({ boxIndex, counts, remaining }) => distributions.push(`${boxIndex}:${counts.join('-')}:${remaining}`));
-  const offReset = bridge.on('challenge:distribution-reset', () => { resets += 1; });
+  const offReset = bridge.on('challenge:distribution-reset', ({ items }) => { resets += items; });
 
-  bridge.emit('challenge:robot-configured', { bodyId: 'ciano', antennaId: 'haste' });
+  bridge.emit('challenge:stage-selected', { stageId: 'carcaca', optionId: 'ciano' });
   bridge.emit('challenge:item-placed', { boxIndex: 1, counts: [3, 2, 2], remaining: 0 });
-  bridge.emit('challenge:distribution-reset', undefined);
-  offRobot(); offItem(); offReset();
-  bridge.emit('challenge:robot-configured', { bodyId: 'coral', antennaId: 'dupla' });
+  bridge.emit('challenge:distribution-reset', { items: 7 });
+  offStage(); offItem(); offReset();
+  bridge.emit('challenge:stage-selected', { stageId: 'carcaca', optionId: 'coral' });
 
-  expect(robots).toEqual(['ciano:haste']);
+  expect(stages).toEqual(['carcaca:ciano']);
   expect(distributions).toEqual(['1:3-2-2:0']);
-  expect(resets).toBe(1);
+  expect(resets).toBe(7);
 });

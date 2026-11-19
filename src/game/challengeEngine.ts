@@ -3,14 +3,14 @@ import type { GameBridge } from './bridge/events';
 import { AdditionChallengeScene } from './scenes/AdditionChallengeScene';
 import { MultiplicationChallengeScene } from './scenes/MultiplicationChallengeScene';
 import { PigeonholeChallengeScene } from './scenes/PigeonholeChallengeScene';
-import type { Principle } from '../content/sectors';
+import type { AnyChallengeDefinition } from '../content/challenges';
 
-export function mountChallengeGame(parent: HTMLElement, bridge: GameBridge, kind: Principle): () => void {
-  const scene = kind === 'addition'
-    ? new AdditionChallengeScene(bridge)
-    : kind === 'multiplication'
-      ? new MultiplicationChallengeScene(bridge)
-      : new PigeonholeChallengeScene(bridge);
+export function mountChallengeGame(parent: HTMLElement, bridge: GameBridge, challenge: AnyChallengeDefinition): () => void {
+  const scene = challenge.principle === 'addition'
+    ? new AdditionChallengeScene(bridge, challenge.groups)
+    : challenge.principle === 'multiplication'
+      ? new MultiplicationChallengeScene(bridge, challenge)
+      : new PigeonholeChallengeScene(bridge, challenge);
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent,

@@ -1,7 +1,10 @@
-import { pigeonholeStorageChallenge } from '../content/challenges';
+import {
+  pigeonholeStorageChallenge,
+  type PigeonholeChallengeDefinition,
+} from '../content/challenges';
 
-export type BoxIndex = 0 | 1 | 2;
-export type BoxCounts = readonly [number, number, number];
+export type BoxIndex = number;
+export type BoxCounts = readonly number[];
 
 export interface PigeonholeChallengeState {
   counts: BoxCounts;
@@ -20,27 +23,34 @@ export type PigeonholeChallengeAction =
   | { type: 'confirm-answer' }
   | { type: 'reset' };
 
-export const pigeonholeChallengeInitialState: PigeonholeChallengeState = {
-  counts: [0, 0, 0],
-  remaining: pigeonholeStorageChallenge.items,
-  selectedAnswer: null,
-  hintVisible: false,
-  feedback: '',
-  completed: false,
-};
+export function createPigeonholeChallengeState(
+  challenge: PigeonholeChallengeDefinition = pigeonholeStorageChallenge,
+): PigeonholeChallengeState {
+  return {
+    counts: Array.from({ length: challenge.boxes }, () => 0),
+    remaining: challenge.items,
+    selectedAnswer: null,
+    hintVisible: false,
+    feedback: '',
+    completed: false,
+  };
+}
+
+export const pigeonholeChallengeInitialState = createPigeonholeChallengeState();
 
 export function reducePigeonholeChallenge(
   state: PigeonholeChallengeState,
   action: PigeonholeChallengeAction,
+  challenge: PigeonholeChallengeDefinition = pigeonholeStorageChallenge,
 ): PigeonholeChallengeState {
-  if (action.type === 'reset' || action.type === 'reset-distribution') return pigeonholeChallengeInitialState;
+  if (action.type === 'reset' || action.type === 'reset-distribution') return createPigeonholeChallengeState(challenge);
   if (state.completed) return state;
 
   switch (action.type) {
     case 'place-item': {
-      if (state.remaining === 0) return state;
-      const counts: [number, number, number] = [...state.counts];
-      counts[action.boxIndex] += 1;
+      if (state.remaining === 0 || action.boxIndex < 0 || action.boxIndex >= state.counts.length) return state;
+      const counts = [...state.counts];
+      counts[action.boxIndex] = (counts[action.boxIndex] ?? 0) + 1;
       return { ...state, counts, remaining: state.remaining - 1, selectedAnswer: null, feedback: '' };
     }
     case 'select-answer':
@@ -49,13 +59,13 @@ export function reducePigeonholeChallenge(
       return { ...state, hintVisible: true };
     case 'confirm-answer': {
       if (state.selectedAnswer === null) return state;
-      if (state.selectedAnswer === pigeonholeStorageChallenge.correctAnswer) {
-        return { ...state, completed: true, feedback: pigeonholeStorageChallenge.successExplanation };
+      if (state.selectedAnswer === challenge.correctAnswer) {
+        return { ...state, completed: true, feedback: challenge.successExplanation };
       }
       return {
         ...state,
         selectedAnswer: null,
-        feedback: pigeonholeStorageChallenge.feedback[state.selectedAnswer] ?? 'Observe quantas peças cabem sem que alguma caixa chegue a três.',
+        feedback: challenge.feedback[state.selectedAnswer] ?? `Observe quantas ${challenge.itemPlural} podem ficar sem que algum ${challenge.boxLabel} ultrapasse o limite.`,
       };
     }
   }

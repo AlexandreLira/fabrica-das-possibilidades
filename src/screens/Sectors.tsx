@@ -1,5 +1,5 @@
 import { useStore } from 'zustand';
-import { demoChallenges } from '../content/challenges';
+import { allChallenges } from '../content/challenges';
 import { sectors } from '../content/sectors';
 import { GamePreview } from '../game/GamePreview';
 import { appStore } from '../state/store';
@@ -20,13 +20,16 @@ export function Sectors() {
         <ol className="sector-phases" aria-label={`Fases de ${sector.title}`}>
           {sector.challengeIds.map((id, index) => {
             const completed = completedChallengeIds.includes(id);
-            const available = demoChallenges.some((challenge) => challenge.id === id);
+            const available = allChallenges.some((challenge) => challenge.id === id);
             const phaseLabel = `Fase ${index + 1} de ${sectorLabels[sector.id]}`;
+            const playLabel = index === 0
+              ? (completed ? `Jogar novamente a fase de ${sectorLabels[sector.id]}` : `Jogar fase de ${sectorLabels[sector.id]}`)
+              : (completed ? `Jogar novamente ${phaseLabel.toLocaleLowerCase('pt-BR')}` : `Jogar ${phaseLabel.toLocaleLowerCase('pt-BR')}`);
             return <li className="sector-phase" key={id}>
               <span className="sector-phase-number" aria-hidden="true">{completed ? '✓' : String(index + 1).padStart(2, '0')}</span>
               <span className="sector-phase-status">{available ? (completed ? 'Concluída nesta sessão' : 'Disponível') : 'Em desenvolvimento'}</span>
               {available
-                ? <a className="sector-phase-action" href={`#/desafios/${id}`} aria-label={completed ? `Jogar novamente a fase de ${sectorLabels[sector.id]}` : `Jogar fase de ${sectorLabels[sector.id]}`}>{completed ? 'Jogar novamente' : 'Jogar fase'} <span aria-hidden="true">→</span></a>
+                ? <a className="sector-phase-action" href={`#/desafios/${id}`} aria-label={playLabel}>{completed ? 'Jogar novamente' : 'Jogar fase'} <span aria-hidden="true">→</span></a>
                 : <button className="sector-phase-action" type="button" disabled aria-label={`${phaseLabel} — em desenvolvimento`}>Em breve</button>}
             </li>;
           })}
