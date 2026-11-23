@@ -14,17 +14,21 @@ export class AdditionChallengeScene extends Phaser.Scene {
     for (let x = 0; x <= 320; x += 16) grid.lineBetween(x, 0, x, 190);
     for (let y = 0; y <= 190; y += 16) grid.lineBetween(0, y, 320, y);
 
-    const colors = [0xf4c955, 0x71dfda, 0xef7d72];
-    const width = this.groups.length === 2 ? 132 : 96;
+    const colors = [0xf4c955, 0x71dfda, 0xef7d72, 0xa8b4f9];
+    const staffLayout = this.groups.length === 4;
+    const width = staffLayout ? 142 : this.groups.length === 2 ? 132 : 96;
     const gap = this.groups.length === 2 ? 28 : 8;
-    const totalWidth = this.groups.length * width + (this.groups.length - 1) * gap;
+    const columns = staffLayout ? 2 : this.groups.length;
+    const totalWidth = columns * width + (columns - 1) * gap;
     const startX = (320 - totalWidth) / 2;
     const groupObjects = new Map<string, Array<Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text>>();
     this.groups.forEach((group, index) => {
       const color = colors[index % colors.length] ?? 0xf4c955;
       groupObjects.set(group.id, this.createGroup(
-        startX + index * (width + gap), 18, width, 98,
-        group.name.toLocaleUpperCase('pt-BR').slice(0, 15), group.count, color,
+        startX + (index % columns) * (width + gap),
+        staffLayout ? 10 + Math.floor(index / columns) * 62 : 18,
+        width, staffLayout ? 56 : 98,
+        group.name.toLocaleUpperCase('pt-BR').slice(0, 15), group.count, color, group.symbol,
       ));
     });
 
@@ -52,17 +56,26 @@ export class AdditionChallengeScene extends Phaser.Scene {
     this.bridge.emit('scene:ready', undefined);
   }
 
-  private createGroup(x: number, y: number, width: number, height: number, label: string, count: number, color: number) {
+  private createGroup(x: number, y: number, width: number, height: number, label: string, count: number, color: number, symbol?: string) {
     const objects: Array<Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text> = [];
     objects.push(this.add.rectangle(x + width / 2, y + height / 2, width, height, 0x193744).setStrokeStyle(2, color));
-    objects.push(this.add.text(x + 5, y + 5, label, { fontFamily: 'monospace', fontSize: '8px', color: '#f7f2e5' }));
-    const columns = Math.min(count, width < 110 ? 3 : 2);
+    objects.push(this.add.text(x + 5, y + 5, symbol ? `${symbol}  ${label}` : label, { fontFamily: 'monospace', fontSize: '8px', color: '#f7f2e5' }));
+    const columns = Math.min(count, symbol ? 4 : width < 110 ? 3 : 2);
     const cellWidth = (width - 12) / columns;
     const rows = Math.ceil(count / columns);
-    const cellHeight = Math.min(24, (height - 30) / Math.max(rows, 1));
+    const cellHeight = Math.min(24, (height - (symbol ? 18 : 30)) / Math.max(rows, 1));
     for (let index = 0; index < count; index += 1) {
       const column = index % columns;
       const row = Math.floor(index / columns);
+      if (symbol) {
+        const personX = x + 6 + (column + 0.5) * cellWidth;
+        const personY = y + 17 + (row + 0.5) * cellHeight;
+        objects.push(
+          this.add.rectangle(personX, personY - 4, 5, 5, color),
+          this.add.rectangle(personX, personY + 2, 10, 6, color),
+        );
+        continue;
+      }
       const vehicle = this.add.rectangle(
         x + 6 + column * cellWidth + cellWidth / 2,
         y + 28 + row * cellHeight + cellHeight / 2,

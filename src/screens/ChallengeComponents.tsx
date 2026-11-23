@@ -35,7 +35,11 @@ interface AnswerPanelProps {
   feedback: string;
   completed: boolean;
   prompt?: ReactNode;
+  questionContent?: ReactNode;
   onSelect: (answer: number) => void;
+  completionMessage?: string;
+  confirmLabel?: string;
+  formatAnswer?: (answer: number) => string;
   onHint: () => void;
   onConfirm: () => void;
 }
@@ -49,7 +53,11 @@ export function AnswerPanel({
   feedback,
   completed,
   prompt,
+  questionContent,
   onSelect,
+  completionMessage,
+  confirmLabel = "Confirmar",
+  formatAnswer = String,
   onHint,
   onConfirm,
 }: AnswerPanelProps) {
@@ -57,7 +65,7 @@ export function AnswerPanel({
   return <>
     <section className="answer-panel" aria-labelledby={`${challenge.id}-question`}>
       <span className="eyebrow">Desafio matemático</span>
-      <h2 id={`${challenge.id}-question`} className="challenge-question">{challenge.question}</h2>
+      <h2 id={`${challenge.id}-question`} className="challenge-question">{questionContent ?? challenge.question}</h2>
       {prompt}
       {!ready && <p className="unlock-note">{readyMessage}</p>}
       <fieldset className="answer-options" disabled={!ready || completed} aria-label="Escolha uma resposta">
@@ -70,7 +78,7 @@ export function AnswerPanel({
             checked={selectedAnswer === answer}
             onChange={() => onSelect(answer)}
           />
-          <span>{answer}</span>
+          <span>{formatAnswer(answer)}</span>
         </label>)}
       </fieldset>
       <div className="challenge-actions">
@@ -82,7 +90,7 @@ export function AnswerPanel({
           aria-expanded={hintVisible && !completed}
         >Ver dica <span aria-hidden="true">?</span></PixelButton>
         <PixelButton className="primary" onClick={onConfirm} disabled={selectedAnswer === null || completed}>
-          Confirmar <span aria-hidden="true">→</span>
+          {confirmLabel} <span aria-hidden="true">→</span>
         </PixelButton>
       </div>
     </section>
@@ -90,6 +98,7 @@ export function AnswerPanel({
       {hintVisible && !completed && <><span className="eyebrow">Dica do B.O.T.</span><p>{challenge.hint}</p></>}
     </aside>
     <div className={`challenge-feedback ${completed ? 'is-success' : ''}`} role="status" aria-live="polite" aria-atomic="true">
+      {completed && completionMessage && <BotBubble>{completionMessage}</BotBubble>}
       {feedback && <p>{feedback}</p>}
     </div>
   </>;

@@ -9,7 +9,7 @@ export function Completion() {
     <span className="eyebrow page-eyebrow">Resumo da demonstração</span>
     <h1 tabIndex={-1}>{complete ? 'Fábrica em funcionamento!' : 'Resumo dos princípios'}</h1>
     <BotBubble>{complete
-      ? 'Você concluiu todas as nove fases disponíveis! Agora já consegue reconhecer três maneiras diferentes de contar possibilidades.'
+      ? 'Você concluiu todas as fases disponíveis! Agora já consegue reconhecer três maneiras diferentes de contar possibilidades.'
       : 'Você pode consultar este painel e voltar ao mapa para experimentar as fases disponíveis.'}</BotBubble>
     <div className="principle-summary">
       <Panel><span aria-hidden="true">+</span><h2>Princípio da Adição</h2><p><strong>OU entre grupos distintos:</strong> somamos as quantidades de alternativas.</p></Panel>

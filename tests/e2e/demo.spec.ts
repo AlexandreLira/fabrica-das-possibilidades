@@ -26,12 +26,12 @@ async function chooseAnswer(page: import('@playwright/test').Page, answer: numbe
   await page.locator('.answer-options label').filter({ hasText: String(answer) }).click();
 }
 
-test('mapa oferece três fases funcionais em cada setor', async ({ page }) => {
+test('mapa oferece fases funcionais nos três setores', async ({ page }) => {
   await page.goto('/#/setores');
   await expect(page.getByRole('link', { name: 'Jogar fase de Adição' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Jogar fase de Multiplicação' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Jogar fase de Casas de Pombo' })).toBeVisible();
-  await expect(page.locator('.sector-phase a')).toHaveCount(9);
+  await expect(page.locator('.sector-phase a')).toHaveCount(15);
 });
 
 test('monta um robô, explica o erro e apresenta as seis combinações', async ({ page }) => {
@@ -86,7 +86,8 @@ test('comunica a distribuição atual nos controles acessíveis das caixas', asy
   await expect(page.getByText('Distribuição atual: caixa 1 com 1 peça; caixa 2 com 0 peças; caixa 3 com 0 peças.')).toBeVisible();
 });
 
-test('conclui as nove fases em sequência e mostra o resumo final', async ({ page }) => {
+test('conclui as quinze fases em sequência e mostra o resumo final', async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto('/#/desafios/adicao-1');
   await completeAddition(page);
   await page.getByRole('link', { name: 'Continuar para Separação de Produtos' }).click();
@@ -97,6 +98,18 @@ test('conclui as nove fases em sequência e mostra o resumo final', async ({ pag
   for (const group of ['Ferramentas', 'Peças metálicas', 'Componentes eletrônicos']) await page.getByRole('button', { name: new RegExp(`Examinar ${group}`, 'i') }).click();
   await chooseAnswer(page, 12);
   await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para A Grande Produção' }).click();
+  for (const sector of ['mecânico', 'elétrico', 'administrativo', 'logística']) {
+    await page.getByRole('button', { name: `Examinar ${sector}` }).click();
+  }
+  await chooseAnswer(page, 23);
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para Certificação Tripla' }).click();
+  for (const id of ['NR-10', 'NR-12', 'NR-35']) {
+    await page.getByRole('button', { name: `Examinar ${id}` }).click();
+  }
+  await chooseAnswer(page, 21);
+  await page.getByRole('button', { name: 'Enviar Resposta' }).click();
   await page.getByRole('link', { name: 'Continuar para Monte o robô' }).click();
   await completeMultiplication(page);
   await page.getByRole('link', { name: 'Continuar para Montagem de Robôs' }).click();
@@ -108,6 +121,17 @@ test('conclui as nove fases em sequência e mostra o resumo final', async ({ pag
   for (const stage of ['Setor 1', 'Setor 2', 'Setor 3']) await page.getByRole('group', { name: stage }).getByRole('button').first().click();
   await chooseAnswer(page, 12);
   await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para Robô Completo' }).click();
+  for (const part of ['Cabeça 1', 'Corpo 1', 'Braços 1', 'Sensor 1']) {
+    await page.getByRole('button', { name: part, exact: true }).click();
+  }
+  await chooseAnswer(page, 36);
+  await page.getByRole('button', { name: 'Enviar Resposta' }).click();
+  await page.getByRole('link', { name: 'Continuar para Código do Cofre' }).click();
+  for (const key of ['A', '1', '2', '0']) await page.getByRole('button', { name: key, exact: true }).click();
+  await page.getByRole('button', { name: 'Testar código' }).click();
+  await page.locator('.answer-options label').filter({ hasText: '1.640' }).click();
+  await page.getByRole('button', { name: 'Enviar Resposta' }).click();
   await page.getByRole('link', { name: 'Continuar para Organize o depósito' }).click();
   await distribute322(page);
   await page.locator('.answer-options label').filter({ hasText: '3' }).click();
@@ -125,10 +149,20 @@ test('conclui as nove fases em sequência e mostra o resumo final', async ({ pag
   }
   await chooseAnswer(page, 6);
   await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para Operação Linha de Produção' }).click();
+  for (let line = 1; line <= 7; line += 1) {
+    await page.getByRole('button', { name: new RegExp(`Preencher linha ${line}`) }).click();
+  }
+  await chooseAnswer(page, 78);
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('link', { name: 'Continuar para Depósito Crítico' }).click();
+  await page.getByRole('button', { name: 'Retirar peça' }).click();
+  await chooseAnswer(page, 42);
+  await page.getByRole('button', { name: 'Enviar Resposta' }).click();
   await page.getByRole('link', { name: 'Ver resumo final' }).click();
 
   await expect(page.getByRole('heading', { name: 'Fábrica em funcionamento!' })).toBeFocused();
-  await expect(page.getByText(/concluiu todas as nove fases disponíveis/)).toBeVisible();
+  await expect(page.getByText(/concluiu todas as fases disponíveis/)).toBeVisible();
   await expect(page.getByText('OU entre grupos distintos')).toBeVisible();
   await expect(page.getByText('E entre etapas independentes')).toBeVisible();
   await expect(page.getByText('ocupação mínima garantida')).toBeVisible();
@@ -161,7 +195,7 @@ for (const width of [320, 390]) {
   test(`mantém todas as fases sem rolagem horizontal em ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    for (const route of ['adicao-1', 'adicao-2', 'adicao-3', 'multiplicacao-1', 'multiplicacao-2', 'multiplicacao-3', 'casas-de-pombo-1', 'casas-de-pombo-2', 'casas-de-pombo-3']) {
+    for (const route of ['adicao-1', 'adicao-2', 'adicao-3', 'adicao-4', 'adicao-5', 'multiplicacao-1', 'multiplicacao-2', 'multiplicacao-3', 'multiplicacao-4', 'multiplicacao-5', 'casas-de-pombo-1', 'casas-de-pombo-2', 'casas-de-pombo-3', 'casas-de-pombo-4', 'casas-de-pombo-5']) {
       await page.goto(`/#/desafios/${route}`);
       await expect(page.locator('h1')).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

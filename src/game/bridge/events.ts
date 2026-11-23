@@ -1,8 +1,9 @@
+export type BotAction = 'wave' | 'talk' | 'dance';
+
 export interface GameEvents {
   'scene:ready': undefined;
   'scene:failed': undefined;
-  'bot:greet': { reducedMotion: boolean };
-  'bot:greeted': { message: string };
+  'bot:act': { action: BotAction; reducedMotion: boolean };
   'challenge:group-revealed': { groupId: string };
   'challenge:stage-selected': { stageId: string; optionId: string };
   'challenge:item-placed': { boxIndex: number; counts: readonly number[]; remaining: number };
@@ -12,7 +13,7 @@ export interface GameEvents {
 }
 export function createGameBridge() {
   const listeners: { [K in keyof GameEvents]: Set<(payload: GameEvents[K]) => void> } = {
-    'scene:ready': new Set(), 'scene:failed': new Set(), 'bot:greet': new Set(), 'bot:greeted': new Set(),
+    'scene:ready': new Set(), 'scene:failed': new Set(), 'bot:act': new Set(),
     'challenge:group-revealed': new Set(), 'challenge:stage-selected': new Set(), 'challenge:item-placed': new Set(),
     'challenge:distribution-reset': new Set(), 'challenge:answer-evaluated': new Set(), 'challenge:completed': new Set(),
   };

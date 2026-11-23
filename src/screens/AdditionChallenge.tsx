@@ -6,6 +6,7 @@ import { ChallengeGame } from '../game/ChallengeGame';
 import { createGameBridge } from '../game/bridge/events';
 import { playFeedback } from '../audio/effects';
 import { appStore } from '../state/store';
+import { CertificationBreakdown, CertificationGroups } from './CertificationGroups';
 import { AnswerPanel, ChallengeIntro, CompletionActions } from './ChallengeComponents';
 import { createAdditionChallengeState, reduceAdditionChallenge } from './additionChallengeState';
 
@@ -15,8 +16,11 @@ export function AdditionChallenge({ challenge }: { challenge: AdditionChallengeD
     createAdditionChallengeState(),
   );
   const [bridge] = useState(createGameBridge);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const [gameRun, setGameRun] = useState(0);
   const completeChallenge = useStore(appStore, (store) => store.completeChallenge);
+  const hasOverlaps = challenge.overlappingCertifications;
+  const fourGroups = challenge.groups.length === 4;
   const groupsReady = state.revealedGroups.length === challenge.groups.length;
   const nextChallenge = getNextChallenge(challenge.id);
 
@@ -32,17 +36,20 @@ export function AdditionChallenge({ challenge }: { challenge: AdditionChallengeD
     dispatch({ type: 'confirm-answer' });
     bridge.emit('challenge:answer-evaluated', { answer: state.selectedAnswer, correct });
     if (correct) completeChallenge(challenge.id);
-    playFeedback(correct ? (appStore.getState().allChallengesCompleted ? 'complete' : 'success') : 'error');
+    else if (hasOverlaps) setWrongAttempts((attempts) => attempts + 1);
+    const missionCompleted = challenge.completionMessage || appStore.getState().allChallengesCompleted;
+    playFeedback(correct ? (missionCompleted ? 'complete' : 'success') : 'error');
   };
 
   return <>
     <ChallengeIntro challenge={challenge} />
 
+    {hasOverlaps ? <CertificationGroups key={gameRun} revealedGroups={state.revealedGroups} onReveal={revealGroup} /> : <>
     <ChallengeGame key={gameRun} kind="addition" bridge={bridge} challenge={challenge} revealedGroups={state.revealedGroups} completed={state.completed} />
 
     <section className="challenge-routes" aria-labelledby={`${challenge.id}-groups-heading`}>
       <h2 id={`${challenge.id}-groups-heading`}>Examine os grupos</h2>
-      <div className={`route-grid ${challenge.groups.length > 2 ? 'three-groups' : ''}`}>
+      <div className={`route-grid ${challenge.groups.length === 3 ? 'three-groups' : fourGroups ? 'four-groups' : ''}`}>
         {challenge.groups.map((group) => {
           const revealed = state.revealedGroups.includes(group.id);
           return <button
@@ -53,12 +60,16 @@ export function AdditionChallenge({ challenge }: { challenge: AdditionChallengeD
             onClick={() => revealGroup(group.id)}
             disabled={state.completed}
           >
-            <span>{revealed ? group.name : `Examinar ${group.name.toLocaleLowerCase('pt-BR')}`}</span>
+            <span>
+              {group.symbol && <i className="sector-icon" aria-hidden="true">{group.symbol}</i>}
+              {revealed ? group.name : `Examinar ${group.name.toLocaleLowerCase('pt-BR')}`}
+            </span>
             <strong>{revealed ? group.optionsLabel : '?'}</strong>
           </button>;
         })}
       </div>
     </section>
+    </>}
 
     <AnswerPanel
       challenge={challenge}
@@ -68,15 +79,18 @@ export function AdditionChallenge({ challenge }: { challenge: AdditionChallengeD
       hintVisible={state.hintVisible}
       feedback={state.feedback}
       completed={state.completed}
-      prompt={<p className="challenge-equation">{challenge.equation}</p>}
+      confirmLabel={hasOverlaps ? 'Enviar Resposta' : undefined}
+      prompt={!hasOverlaps && <p className={fourGroups ? "challenge-equation four-terms" : "challenge-equation"}>{challenge.equation}</p>}
+      completionMessage={challenge.completionMessage}
       onSelect={(answer) => dispatch({ type: 'select-answer', answer })}
       onHint={() => dispatch({ type: 'show-hint' })}
       onConfirm={confirmAnswer}
     />
+    {hasOverlaps && (state.completed || wrongAttempts >= 2) && <CertificationBreakdown completed={state.completed} />}
     {state.completed && <CompletionActions
       nextHref={nextChallenge ? `#/desafios/${nextChallenge.id}` : '#/conclusao'}
       nextLabel={nextChallenge ? `Continuar para ${nextChallenge.title}` : 'Ver resumo final'}
-      onReplay={() => { dispatch({ type: 'reset' }); setGameRun((run) => run + 1); }}
+      onReplay={() => { dispatch({ type: 'reset' }); setWrongAttempts(0); setGameRun((run) => run + 1); }}
     />}
   </>;
 }

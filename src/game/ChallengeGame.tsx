@@ -1,3 +1,4 @@
+import { RobotAssemblyArt, RobotPartThumbnail } from './CompleteRobotArt';
 import { useEffect, useRef, useState } from 'react';
 import type {
   AdditionChallengeDefinition,
@@ -23,10 +24,12 @@ function AdditionStatic({ challenge, revealedGroups, completed }: {
   revealedGroups: readonly string[];
   completed: boolean;
 }) {
-  return <div className={`challenge-static addition-static ${challenge.groups.length > 2 ? 'many-groups' : ''} ${completed ? 'is-complete' : ''}`} aria-hidden="true">
+  return <div className={`challenge-static addition-static ${challenge.groups.length === 4 ? 'staff-groups' : challenge.groups.length === 3 ? 'many-groups' : ''} ${completed ? 'is-complete' : ''}`} aria-hidden="true">
     {challenge.groups.map((group, index) => <div className={`static-route ${revealedGroups.includes(group.id) ? 'is-revealed' : ''}`} key={group.id}>
-      <span>{group.name}</span><b>{'▰ '.repeat(group.count).trim()}</b>
-      <strong>{index + 1}</strong>
+      <span>{group.symbol && `${group.symbol} `}{group.name}</span>
+      {group.symbol ? <b className="staff-icons">
+        {Array.from({ length: group.count }, (_, person) => <i key={person} />)}
+      </b> : <><b>{'▰ '.repeat(group.count).trim()}</b><strong>{index + 1}</strong></>}
     </div>)}
     <div className="static-conveyor"><i /><i /><i /><i /><span>▣</span></div>
   </div>;
@@ -41,16 +44,17 @@ function MultiplicationStatic({ challenge, selections, completed }: {
   if (challenge.visual === 'routes') {
     return <div className={`challenge-static multiplication-static route-static ${completed ? 'is-complete' : ''}`} aria-hidden="true">
       {challenge.stages.map((stage, index) => <div className="static-route-stage" key={stage.id}>
-        <span>{stage.name}</span><b>{selections[stage.id] ? '◆' : '◇'}</b><small>{stage.options.length} caminhos</small><i>{index < challenge.stages.length - 1 ? '→' : '★'}</i>
+        <span>{stage.name}</span>
+        {selectedOptions[index] ? <RobotPartThumbnail stageId={stage.id}
+          variant={stage.options.findIndex(({ id }) => id === selections[stage.id])}
+          color={selectedOptions[index]?.color} bodyVariant={0} /> : <b>◇</b>}
+        <small>{stage.options.length} caminhos</small><i>{index < challenge.stages.length - 1 ? '→' : '★'}</i>
       </div>)}
     </div>;
   }
-  const body = selectedOptions[0];
-  const antenna = selectedOptions[1];
-  return <div className={`challenge-static multiplication-static ${completed ? 'is-complete' : ''}`} aria-hidden="true">
-    <span className="static-antenna">{antenna?.symbol ?? '?'}</span>
-    <span className="static-robot" style={{ background: body?.color ?? '#38505d' }}>□</span>
-    <div className="static-conveyor"><i /><i /><i /><i /><span>◆</span></div>
+  return <div className="challenge-static complete-robot-static" aria-hidden="true">
+    <RobotAssemblyArt stages={challenge.stages} selections={selections} completed={completed}
+      completeRobot={challenge.visual === 'complete-robot'} />
   </div>;
 }
 
@@ -59,10 +63,13 @@ function PigeonholeStatic({ challenge, counts, completed }: {
   counts: BoxCounts;
   completed: boolean;
 }) {
-  return <div className={`challenge-static pigeonhole-static ${counts.length > 3 ? 'many-boxes' : ''} ${completed ? 'is-complete' : ''}`} aria-hidden="true">
-    {counts.map((count, index) => <div className="static-box" key={index}>
+  const displayedCounts = challenge.targetOccupancy && completed
+    ? counts.map((count, index) => index === 0 ? count + 1 : count)
+    : counts;
+  return <div className={`challenge-static pigeonhole-static ${challenge.targetOccupancy ? 'production-static' : ''} ${counts.length > 3 ? 'many-boxes' : ''} ${completed ? 'is-complete' : ''}`} aria-hidden="true">
+    {displayedCounts.map((count, index) => <div className="static-box" key={index}>
       <span>{challenge.boxNames?.[index] ?? `${challenge.boxLabel} ${index + 1}`}</span>
-      <b>{'■ '.repeat(Math.min(count, 8)).trim() || '—'}</b><strong>{count}</strong>
+      <b>{'■ '.repeat(Math.min(count, challenge.targetOccupancy ?? 8)).trim() || '—'}</b><strong>{count}</strong>
     </div>)}
   </div>;
 }
