@@ -6,6 +6,8 @@ import { Home } from '../screens/Home';
 import { Instructions } from '../screens/Instructions';
 import { Sectors } from '../screens/Sectors';
 import { AdditionChallenge } from '../screens/AdditionChallenge';
+import { CriticalStorageChallenge } from '../screens/CriticalStorageChallenge';
+import { VaultChallenge } from '../screens/VaultChallenge';
 import { MultiplicationChallenge } from '../screens/MultiplicationChallenge';
 import { PigeonholeChallenge } from '../screens/PigeonholeChallenge';
 import { Completion } from '../screens/Completion';
@@ -38,6 +40,8 @@ export function App() {
               const id = route.slice('challenge:'.length) as ChallengeId;
               const challenge = getChallengeById(id);
               if (!challenge) return <ChallengeUnavailable id={id} />;
+              if (challenge.principle === 'multiplication' && challenge.visual === 'vault') return <VaultChallenge key={challenge.id} challenge={challenge} />;
+              if (challenge.principle === 'pigeonhole' && challenge.visual === 'critical-storage') return <CriticalStorageChallenge key={challenge.id} challenge={challenge} />;
               return challenge.principle === 'addition' ? <AdditionChallenge key={challenge.id} challenge={challenge} />
                 : challenge.principle === 'multiplication' ? <MultiplicationChallenge key={challenge.id} challenge={challenge} />
                   : <PigeonholeChallenge key={challenge.id} challenge={challenge} />;

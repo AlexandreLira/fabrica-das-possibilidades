@@ -2,12 +2,12 @@ import { expect, it } from 'vitest';
 import { createGameBridge } from './events';
 it('entrega eventos apenas aos ouvintes ativos e permite limpar a sessão', () => {
   const bridge = createGameBridge(); const received: string[] = [];
-  const off = bridge.on('bot:greeted', ({ message }) => received.push(message));
-  bridge.emit('bot:greeted', { message: 'Olá!' }); off(); off();
-  bridge.emit('bot:greeted', { message: 'Não receber' });
-  bridge.on('bot:greeted', ({ message }) => received.push(message)); bridge.clear();
-  bridge.emit('bot:greeted', { message: 'Também não' });
-  expect(received).toEqual(['Olá!']);
+  const off = bridge.on('bot:act', ({ action }) => received.push(action));
+  bridge.emit('bot:act', { action: 'wave', reducedMotion: false }); off(); off();
+  bridge.emit('bot:act', { action: 'dance', reducedMotion: true });
+  bridge.on('bot:act', ({ action }) => received.push(action)); bridge.clear();
+  bridge.emit('bot:act', { action: 'talk', reducedMotion: false });
+  expect(received).toEqual(['wave']);
 });
 
 it('emite eventos da fase apenas enquanto os listeners estão inscritos', () => {

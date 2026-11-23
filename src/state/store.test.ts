@@ -31,6 +31,16 @@ it('acompanha conclusões apenas durante a sessão e ignora repetições', () =>
   expect(store.getState().allChallengesCompleted).toBe(false);
   ['adicao-2', 'adicao-3', 'multiplicacao-2', 'multiplicacao-3', 'casas-de-pombo-2', 'casas-de-pombo-3']
     .forEach((id) => store.getState().completeChallenge(id as ChallengeId));
+  expect(store.getState().allChallengesCompleted).toBe(false);
+  store.getState().completeChallenge('adicao-4');
+  store.getState().completeChallenge('adicao-5');
+  expect(store.getState().allChallengesCompleted).toBe(false);
+  store.getState().completeChallenge('multiplicacao-4');
+  store.getState().completeChallenge('multiplicacao-5');
+  expect(store.getState().allChallengesCompleted).toBe(false);
+  store.getState().completeChallenge('casas-de-pombo-4');
+  expect(store.getState().allChallengesCompleted).toBe(false);
+  store.getState().completeChallenge('casas-de-pombo-5');
   expect(store.getState().allChallengesCompleted).toBe(true);
 
   const persisted = JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}');

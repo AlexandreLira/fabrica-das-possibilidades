@@ -49,9 +49,15 @@ export function reducePigeonholeChallenge(
   switch (action.type) {
     case 'place-item': {
       if (state.remaining === 0 || action.boxIndex < 0 || action.boxIndex >= state.counts.length) return state;
+      const current = state.counts[action.boxIndex];
+      if (current === undefined) return state;
+      const amount = challenge.targetOccupancy === undefined
+        ? 1
+        : Math.min(state.remaining, challenge.targetOccupancy - 1 - current);
+      if (amount <= 0) return state;
       const counts = [...state.counts];
-      counts[action.boxIndex] = (counts[action.boxIndex] ?? 0) + 1;
-      return { ...state, counts, remaining: state.remaining - 1, selectedAnswer: null, feedback: '' };
+      counts[action.boxIndex] = current + amount;
+      return { ...state, counts, remaining: state.remaining - amount, selectedAnswer: null, feedback: '' };
     }
     case 'select-answer':
       return state.remaining === 0 ? { ...state, selectedAnswer: action.answer, feedback: '' } : state;

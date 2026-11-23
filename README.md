@@ -3,10 +3,10 @@
 Fundação de um jogo educativo mobile-first sobre os princípios da Adição, da
 Multiplicação e das Casas de Pombo. Interface em português, para Ensino Médio.
 
-Esta versão contém início, tutorial, mapa, diálogos do B.O.T. e nove fases
-completas: três de Adição, três de Multiplicação e três de Casas de Pombo. Cada
+Esta versão contém início, tutorial, mapa, diálogos do B.O.T. e quinze fases
+completas: cinco de Adição, cinco de Multiplicação e cinco de Casas de Pombo. Cada
 fase oferece interação, dica, novas tentativas, feedback visual e sonoro,
-explicação matemática, animação Phaser e alternativa estática sem o motor.
+explicação matemática e uma demonstração visual. As cenas Phaser têm alternativa estática sem o motor.
 Não há backend, autenticação, banco remoto, telemetria ou serviços externos em execução.
 O PDF original foi preservado.
 
@@ -62,16 +62,21 @@ caminhos relativos e rotas hash, dispensando regras de reescrita no servidor est
 - `#/desafios/adicao-1`: examinar duas rotas e aplicar `3 + 4 = 7`.
 - `#/desafios/adicao-2`: separar produtos e aplicar `4 + 3 = 7`.
 - `#/desafios/adicao-3`: escolher materiais e aplicar `5 + 4 + 3 = 12`.
+- `#/desafios/adicao-4`: escolher um funcionário entre quatro setores e aplicar `8 + 6 + 5 + 4 = 23`.
+- `#/desafios/adicao-5`: separar listas sobrepostas e encontrar `24 − 3 = 21` funcionários disponíveis.
 - `#/desafios/multiplicacao-1`: combinar três carcaças com duas antenas em `3 × 2 = 6`.
 - `#/desafios/multiplicacao-2`: montar robôs com quatro corpos e três modelos de rodas em `4 × 3 = 12`.
 - `#/desafios/multiplicacao-3`: contar caminhos em três setores com `2 × 3 × 2 = 12`.
+- `#/desafios/multiplicacao-4`: montar um robô com quatro tipos de peças e aplicar `3 × 3 × 2 × 2 = 36`.
+- `#/desafios/multiplicacao-5`: separar casos de algarismos distintos e contar `5 × (72 + 256) = 1.640` códigos.
 - `#/desafios/casas-de-pombo-1`: distribuir sete peças em três caixas e garantir `⌈7 ÷ 3⌉ = 3`.
 - `#/desafios/casas-de-pombo-2`: distribuir treze caixas em cinco compartimentos e garantir `⌈13 ÷ 5⌉ = 3`.
 - `#/desafios/casas-de-pombo-3`: distribuir 31 componentes por seis categorias e garantir `⌈31 ÷ 6⌉ = 6`.
-- `#/conclusao`: revisar os três princípios depois de concluir as nove fases.
+- `#/desafios/casas-de-pombo-4`: simular sete linhas e garantir 12 lotes em uma delas com `7 × (12 − 1) + 1 = 78`.
+- `#/desafios/casas-de-pombo-5`: respeitar o estoque por cor e garantir a meta com `6 + 8 + 3 × 9 + 1 = 42` peças.
+- `#/conclusao`: revisar os três princípios depois de concluir as quinze fases.
 
-As nove fases disponíveis ficam abertas no mapa; as fases 4 e 5 de cada módulo
-continuam em desenvolvimento. “Continuar” percorre a sequência acima, e “Jogar
+As quinze fases disponíveis ficam abertas no mapa. “Continuar” percorre a sequência acima, e “Jogar
 novamente” reinicia a mecânica sem apagar a marca de conclusão da sessão.
 
 ## Frentes e entregas
@@ -144,8 +149,7 @@ As cenas não conhecem Zustand nem regras matemáticas. O contrato inclui:
 
 - `scene:ready`: sem dados; habilita o botão React.
 - `scene:failed`: sem dados; ativa a alternativa estática se o sprite falhar.
-- `bot:greet`: `{ reducedMotion: boolean }`; solicita uma reação visual.
-- `bot:greeted`: `{ message: string }`; anuncia feedback textual acessível.
+- `bot:act`: solicita um aceno, uma reação à conversa ou uma dança, com suporte a movimento reduzido.
 - `challenge:route-revealed`: revela uma rota na fase de Adição.
 - `challenge:robot-configured`: sincroniza carcaça e antena na Multiplicação.
 - `challenge:item-placed` e `challenge:distribution-reset`: sincronizam o depósito.
@@ -184,7 +188,7 @@ garantido pela configuração pedagógica de cada futuro desafio.
 Chave `fabrica-possibilidades:v1`, formato `{ version: 1, soundEnabled,
 instructionsCompleted }`. Tipos inválidos, JSON corrompido e versões desconhecidas
 voltam aos padrões. Falha de leitura/gravação mantém a sessão em memória. A conclusão
-das nove fases existe apenas durante a sessão atual e não entra no `localStorage`;
+das fases existe apenas durante a sessão atual e não entra no `localStorage`;
 recarregar reinicia esse progresso. Não há pontuação.
 
 O service worker registra apenas em produção, cacheia app, motor e recursos locais,

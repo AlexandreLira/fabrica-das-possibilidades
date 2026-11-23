@@ -3,16 +3,22 @@ import {
   countCombinations,
   minimumGuaranteedOccupancy,
 } from '../domain/math/counting';
-import type { ChallengeDefinition, ChallengeId } from './sectors';
+import { sectors, type ChallengeDefinition, type ChallengeId } from './sectors';
+import { criticalStorageGuarantee } from '../domain/math/criticalStorage';
+import { vaultCodeCount } from '../domain/math/vaultCode';
+import { certificationLists, certifiedEmployees } from './certifications';
 
 export interface AdditionChallengeDefinition extends ChallengeDefinition {
   principle: 'addition';
+  overlappingCertifications?: boolean;
+  completionMessage?: string;
   equation: string;
   groups: readonly {
     id: string;
     name: string;
     count: number;
     optionsLabel: string;
+    symbol?: string;
   }[];
 }
 
@@ -93,6 +99,67 @@ export const additionMaterialsChallenge: AdditionChallengeDefinition = {
   successExplanation: 'Excelente! 5 ferramentas + 4 peças metálicas + 3 componentes eletrônicos = 12 opções.',
 };
 
+const productionGroups = [
+  { id: 'mecanico', name: 'Mecânico', count: 8, optionsLabel: '8 funcionários', symbol: '⚙' },
+  { id: 'eletrico', name: 'Elétrico', count: 6, optionsLabel: '6 funcionários', symbol: 'ϟ' },
+  { id: 'administrativo', name: 'Administrativo', count: 5, optionsLabel: '5 funcionários', symbol: '▤' },
+  { id: 'logistica', name: 'Logística', count: 4, optionsLabel: '4 funcionários', symbol: '▣' },
+] as const;
+
+export const additionProductionChallenge: AdditionChallengeDefinition = {
+  id: 'adicao-4',
+  principle: 'addition',
+  title: 'A Grande Produção',
+  sectorLabel: 'Setor 01 — Fase 4',
+  introduction: 'A fábrica recebeu uma encomenda muito importante e precisamos escolher um funcionário para coordenar a produção. Temos profissionais em quatro setores diferentes. Vamos descobrir quantas possibilidades existem?',
+  question: 'Se a fábrica precisa escolher apenas um funcionário entre os quatro setores, quantas possibilidades de escolha existem?',
+  tutorial: [
+    'Examine os quatro setores e conte os funcionários de cada um.',
+    'Some as quatro quantidades, escolha o resultado e confirme.',
+  ],
+  equation: '8 + 6 + 5 + 4 = ?',
+  groups: productionGroups,
+  answers: [21, 22, 23, 24],
+  correctAnswer: countAlternatives(productionGroups.map(({ count }) => count)),
+  hint: 'Temos quatro setores diferentes. Organize os valores e faça a soma de todos eles.',
+  feedback: {
+    21: 'Confira se você contou todos os funcionários do setor administrativo.',
+    22: 'Revise a soma das quatro categorias.',
+    24: 'Atenção! Confira os valores apresentados antes de responder.',
+  },
+  successExplanation: 'Somamos 8 + 6 + 5 + 4 = 23 possibilidades porque escolhemos um único funcionário entre quatro setores distintos.',
+  completionMessage: 'MISSÃO CUMPRIDA! Você conseguiu resolver o desafio dos quatro setores! Nesta fase, utilizamos o princípio da adição com quatro categorias de alternativas. Você demonstrou que consegue aplicar esse conhecimento em situações mais complexas. Parabéns!',
+};
+
+export const additionCertificationChallenge: AdditionChallengeDefinition = {
+  id: 'adicao-5',
+  principle: 'addition',
+  overlappingCertifications: true,
+  title: 'Certificação Tripla',
+  sectorLabel: 'Setor 01 — Fase 5',
+  introduction: 'Construtor, preciso escolher um coordenador com pelo menos uma certificação de segurança. Algumas pessoas aparecem em várias listas e outras estão afastadas. Quantos funcionários diferentes posso escolher?',
+  question: 'Se a fábrica precisa escolher um único coordenador que tenha pelo menos uma certificação e esteja disponível, quantas possibilidades de escolha existem?',
+  tutorial: [
+    'Examine as três listas de certificação e o quadro de interseções.',
+    'Toque nos crachás marcados como repetidos para ver em quais listas cada pessoa aparece.',
+    'Conte cada pessoa uma vez só, retire os afastados e escolha uma resposta.',
+  ],
+  equation: '24 − 3 = 21',
+  groups: certificationLists.map(({ id, name, employees }) => ({
+    id, name, count: employees.length, optionsLabel: `${employees.length} funcionários`,
+  })),
+  answers: [24, 31, 21, 19],
+  correctAnswer: certifiedEmployees.filter(({ away }) => !away).length,
+  hint: 'Das 5 pessoas que têm NR-10 e NR-12, 2 também têm NR-35. Quantas têm exatamente essas duas? Use a mesma ideia para separar as listas em grupos sem repetição.',
+  feedback: {
+    24: 'Ótima contagem! Mas o coordenador precisa estar disponível. Quantas pessoas afastadas devem sair da lista?',
+    31: 'Quem tem duas ou três certificações aparece em várias listas. Como contar cada pessoa uma vez só?',
+    19: 'As duas pessoas com as três certificações foram contadas três vezes e descontadas três vezes. Como colocá-las de volta na contagem?',
+  },
+  completionMessage: 'Missão cumprida, construtor! Você encontrou 24 pessoas com certificação e retirou os 3 afastados. Sobram 21 coordenadores possíveis!',
+  successExplanation: 'Cada pessoa pertence a um único grupo depois da reorganização. Assim, a soma dos sete grupos conta cada funcionário uma vez.',
+};
+
 export interface MultiplicationOption {
   id: string;
   name: string;
@@ -108,7 +175,7 @@ export interface MultiplicationStage {
 
 export interface MultiplicationChallengeDefinition extends ChallengeDefinition {
   principle: 'multiplication';
-  visual: 'robot' | 'routes';
+  visual: 'robot' | 'routes' | 'complete-robot';
   equation: string;
   stages: readonly MultiplicationStage[];
 }
@@ -123,8 +190,8 @@ const robotStages = [
   },
   {
     id: 'antena', name: 'Antena', options: [
-      { id: 'haste', name: 'Antena de haste', symbol: '│' },
-      { id: 'dupla', name: 'Antena dupla', symbol: 'Y' },
+      { id: 'haste', name: 'Antena de haste', color: '#f4c955' },
+      { id: 'dupla', name: 'Antena dupla', color: '#71dfda' },
     ],
   },
 ] as const;
@@ -164,9 +231,9 @@ const assemblyStages = [
   },
   {
     id: 'rodas', name: 'Modelo de rodas', options: [
-      { id: 'rodas-1', name: 'Rodas 1' },
-      { id: 'rodas-2', name: 'Rodas 2' },
-      { id: 'rodas-3', name: 'Rodas 3' },
+      { id: 'rodas-1', name: 'Rodas 1', color: '#71dfda' },
+      { id: 'rodas-2', name: 'Rodas 2', color: '#f4c955' },
+      { id: 'rodas-3', name: 'Rodas 3', color: '#b6a3eb' },
     ],
   },
 ] as const;
@@ -194,9 +261,9 @@ export const multiplicationAssemblyChallenge: MultiplicationChallengeDefinition 
 };
 
 const routeStages = [
-  { id: 'setor-1', name: 'Setor 1', options: [{ id: 'rota-1a', name: 'Caminho A' }, { id: 'rota-1b', name: 'Caminho B' }] },
-  { id: 'setor-2', name: 'Setor 2', options: [{ id: 'rota-2a', name: 'Caminho A' }, { id: 'rota-2b', name: 'Caminho B' }, { id: 'rota-2c', name: 'Caminho C' }] },
-  { id: 'setor-3', name: 'Setor 3', options: [{ id: 'rota-3a', name: 'Caminho A' }, { id: 'rota-3b', name: 'Caminho B' }] },
+  { id: 'setor-1', name: 'Setor 1', options: [{ id: 'rota-1a', name: 'Caminho A', color: '#71dfda' }, { id: 'rota-1b', name: 'Caminho B', color: '#f4c955' }] },
+  { id: 'setor-2', name: 'Setor 2', options: [{ id: 'rota-2a', name: 'Caminho A', color: '#71dfda' }, { id: 'rota-2b', name: 'Caminho B', color: '#f4c955' }, { id: 'rota-2c', name: 'Caminho C', color: '#b6a3eb' }] },
+  { id: 'setor-3', name: 'Setor 3', options: [{ id: 'rota-3a', name: 'Caminho A', color: '#71dfda' }, { id: 'rota-3b', name: 'Caminho B', color: '#f4c955' }] },
 ] as const;
 
 export const multiplicationRoutesChallenge: MultiplicationChallengeDefinition = {
@@ -221,14 +288,91 @@ export const multiplicationRoutesChallenge: MultiplicationChallengeDefinition = 
   successExplanation: 'Há 2 caminhos no primeiro setor, 3 no segundo e 2 no terceiro: 2 × 3 × 2 = 12 trajetos.',
 };
 
+const completeRobotStages = [
+  { id: 'cabeca', name: 'Cabeça', options: [
+    { id: 'cabeca-1', name: 'Cabeça 1', color: '#71dfda' },
+    { id: 'cabeca-2', name: 'Cabeça 2', color: '#f4c955' },
+    { id: 'cabeca-3', name: 'Cabeça 3', color: '#b6a3eb' },
+  ] },
+  { id: 'corpo', name: 'Corpo', options: [
+    { id: 'corpo-1', name: 'Corpo 1', color: '#71dfda' },
+    { id: 'corpo-2', name: 'Corpo 2', color: '#ef7d72' },
+    { id: 'corpo-3', name: 'Corpo 3', color: '#b6a3eb' },
+  ] },
+  { id: 'bracos', name: 'Braços', options: [
+    { id: 'bracos-1', name: 'Braços 1', color: '#71dfda' },
+    { id: 'bracos-2', name: 'Braços 2', color: '#ef7d72' },
+  ] },
+  { id: 'sensores', name: 'Sensores', options: [
+    { id: 'sensor-1', name: 'Sensor 1', color: '#f4c955' },
+    { id: 'sensor-2', name: 'Sensor 2', color: '#71dfda' },
+  ] },
+] as const satisfies readonly MultiplicationStage[];
+
+export const multiplicationCompleteRobotChallenge: MultiplicationChallengeDefinition = {
+  id: 'multiplicacao-4',
+  principle: 'multiplication',
+  visual: 'complete-robot',
+  title: 'Robô Completo',
+  sectorLabel: 'Setor 02 — Fase 4',
+  introduction: 'Atenção, construtor! Recebemos uma missão especial: mapear todos os modelos de robôs para a competição! Temos várias opções de peças na esteira. Você consegue descobrir quantas combinações diferentes conseguimos montar combinando uma peça de cada categoria?',
+  question: 'Para a competição, a fábrica tem 3 opções de cabeça, 3 de corpo, 2 de braços e 2 de sensores. Se cada robô usa exatamente uma opção de cada categoria, quantos modelos diferentes podem ser construídos?',
+  tutorial: [
+    'Combine uma peça de cada categoria para ver o robô tomar forma.',
+    'Experimente outras peças, calcule o total de modelos e escolha uma resposta.',
+  ],
+  equation: '3 × 3 × 2 × 2 = ?',
+  stages: completeRobotStages,
+  answers: [10, 18, 24, 36],
+  correctAnswer: countCombinations(completeRobotStages.map(({ options }) => options.length)),
+  hint: 'Observe quantas categorias existem. Cada categoria representa uma etapa da montagem. Em vez de somar, pense em quantas combinações se formam ao multiplicar as opções de cada etapa!',
+  feedback: {
+    10: 'Cuidado! Você somou a quantidade de peças disponíveis, mas cada cabeça combina com todas as opções de corpo, braços e sensores. Que operação conta essas combinações?',
+    18: 'Chegou perto! Confira se incluiu as quatro categorias: cabeças, corpos, braços e sensores.',
+    24: 'Quase lá! Vamos refazer a conta por partes: 3 × 3 = 9, depois 9 × 2 = 18 e agora 18 × 2 = ?',
+  },
+  successExplanation: 'Excelente trabalho, construtor! Cabeças e corpos dão 3 × 3 = 9 combinações. Com os braços, são 9 × 2 = 18. Com os sensores, 18 × 2 = 36 modelos. Como as quatro etapas são independentes, multiplicamos todas as possibilidades. Com essa estratégia, a fábrica vai dominar a competição!',
+};
+
+export interface VaultChallengeDefinition extends ChallengeDefinition {
+  id: 'multiplicacao-5';
+  principle: 'multiplication';
+  visual: 'vault';
+}
+
+export const multiplicationVaultChallenge: VaultChallengeDefinition = {
+  id: 'multiplicacao-5',
+  principle: 'multiplication',
+  visual: 'vault',
+  title: 'Código do Cofre',
+  sectorLabel: 'Setor 02 — Fase 5',
+  introduction: 'Construtor, o cofre da fábrica só abre com uma letra seguida de três algarismos. Observe como a escolha de um algarismo afeta as outras posições. Quantos códigos diferentes o sistema aceita?',
+  question: 'Quantos códigos diferentes o cofre aceita?',
+  tutorial: [
+    'Use o teclado para montar um código e testar as regras.',
+    'Observe como as escolhas afetam as posições restantes e escolha uma resposta.',
+  ],
+  answers: [1440, 1640, 2025, 2250],
+  correctAnswer: vaultCodeCount,
+  hint: 'Comece pelo último algarismo: ele é 0 ou é outro número par? Em cada caso, quantas opções sobram para o primeiro e para o do meio?',
+  feedback: {
+    1440: 'Quantos algarismos pares sobram no final depende das escolhas anteriores. Lembre-se de que o 0 é par e só pode aparecer depois da primeira posição.',
+    2025: 'O último algarismo também precisa ser diferente dos dois primeiros. Se o primeiro for par, quantos pares ainda sobram para o final?',
+    2250: 'Os algarismos do código não podem se repetir. Quantas opções sobram para o meio depois de escolher o primeiro e o último?',
+  },
+  successExplanation: 'Cofre aberto, construtor! Separamos os trios em dois casos, somamos as possibilidades e multiplicamos pelas cinco letras.',
+};
+
 export interface PigeonholeChallengeDefinition extends ChallengeDefinition {
   principle: 'pigeonhole';
+  visual?: undefined;
   items: number;
   itemLabel: string;
   itemPlural: string;
   boxLabel: string;
   boxes: number;
   boxNames?: readonly string[];
+  targetOccupancy?: number;
   equation: string;
 }
 
@@ -310,6 +454,70 @@ export const pigeonholeComponentsChallenge: PigeonholeChallengeDefinition = {
   successExplanation: 'Seis categorias com 5 componentes acomodam 30. O componente restante garante que uma categoria tenha pelo menos 6.',
 };
 
+const productionLines = 7;
+const productionTarget = 12;
+const productionLimit = countCombinations([productionLines, productionTarget - 1]);
+
+export const pigeonholeProductionChallenge: PigeonholeChallengeDefinition = {
+  id: 'casas-de-pombo-4',
+  principle: 'pigeonhole',
+  title: 'Operação Linha de Produção',
+  sectorLabel: 'Setor 03 — Fase 4',
+  introduction: 'Temos uma missão importante no controle de qualidade! A fábrica possui 7 linhas de produção, e precisamos garantir que pelo menos uma delas tenha 12 lotes ou mais para receber uma auditoria especial. Não sabemos como os lotes serão distribuídos. Descubra quantos lotes precisamos registrar para ter essa garantia!',
+  question: 'Qual é o menor número de lotes que a fábrica precisa registrar para garantir que pelo menos uma das 7 linhas de produção tenha 12 lotes ou mais?',
+  tutorial: [
+    'Cada lote pertence a uma única linha. A distribuição pode ser desigual.',
+    'Para simular o cenário em que nenhuma linha alcança 12, preencha cada linha com 11 lotes.',
+    'Observe o total do cenário-limite e pense no que acontece ao registrar mais um lote.',
+  ],
+  items: productionLimit,
+  itemLabel: 'lote',
+  itemPlural: 'lotes',
+  boxLabel: 'linha',
+  boxes: productionLines,
+  targetOccupancy: productionTarget,
+  equation: '7 × (12 − 1) + 1 = 78',
+  answers: [77, 78, 84, 85],
+  correctAnswer: countAlternatives([productionLimit, 1]),
+  hint: 'Se cada uma das 7 linhas pudesse receber 11 lotes, quantos lotes seriam distribuídos ao todo? O que aconteceria com o lote seguinte?',
+  feedback: {
+    77: 'Ainda não! Com 77 lotes, você pode distribuir 11 em cada uma das 7 linhas. Assim, nenhuma chega a 12. É preciso considerar mais um lote.',
+    84: 'Esse total garante a meta, mas o desafio pede o menor número possível. Verifique se a garantia já acontece antes de chegar a 84.',
+    85: 'Esse total também ultrapassa o necessário. Queremos o primeiro lote que torna impossível manter todas as linhas com 11 ou menos.',
+  },
+  successExplanation: 'Excelente! Com 77 lotes, ainda podemos distribuir 11 em cada linha. Quando chega o 78º lote, alguma linha obrigatoriamente fica com pelo menos 12. Você aplicou a forma generalizada do Princípio das Casas de Pombo!',
+};
+
+export interface CriticalStorageChallengeDefinition extends ChallengeDefinition {
+  id: 'casas-de-pombo-5';
+  principle: 'pigeonhole';
+  visual: 'critical-storage';
+}
+
+export const pigeonholeCriticalStorageChallenge: CriticalStorageChallengeDefinition = {
+  id: 'casas-de-pombo-5',
+  principle: 'pigeonhole',
+  visual: 'critical-storage',
+  title: 'Depósito Crítico',
+  sectorLabel: 'Setor 03 — Fase 5',
+  introduction: 'Construtor, o braço robótico retira peças às cegas. Para a inspeção, precisamos garantir 10 peças de uma mesma cor. Como os estoques são diferentes, pense no pior cenário possível.',
+  question: 'Qual é o menor número de peças que precisam ser retiradas para garantir pelo menos 10 peças de uma mesma cor?',
+  tutorial: [
+    'Observe os cinco estoques. O braço retira uma peça por vez, às cegas e sem devolver nenhuma.',
+    'Experimente algumas retiradas e imagine o maior total possível sem que nenhuma cor chegue a 10.',
+    'Pense no que acontece na retirada seguinte e escolha uma resposta.',
+  ],
+  answers: [41, 42, 46, 51],
+  correctAnswer: criticalStorageGuarantee,
+  hint: 'Para cada cor, qual é o máximo que você pode retirar sem chegar a 10, respeitando o estoque?',
+  feedback: {
+    41: 'Com 41 peças, ainda é possível que nenhuma cor tenha 10. O que acontece quando o braço retira a próxima peça?',
+    46: 'Esse cálculo supõe que todas as cores conseguem chegar a 9 peças. Confira o estoque das azuis e das verdes.',
+    51: 'Para evitar atingir 10, o máximo por cor é 9. Algumas cores ainda têm estoque menor que isso.',
+  },
+  successExplanation: 'Perfeito, construtor! A 42ª peça garante pelo menos 10 da mesma cor. Você adaptou o Princípio das Casas de Pombo ao estoque real!',
+};
+
 export const demoChallenges = [
   additionRouteChallenge,
   multiplicationRobotChallenge,
@@ -320,12 +528,18 @@ export const allChallenges = [
   additionRouteChallenge,
   additionSeparationChallenge,
   additionMaterialsChallenge,
+  additionProductionChallenge,
+  additionCertificationChallenge,
   multiplicationRobotChallenge,
   multiplicationAssemblyChallenge,
   multiplicationRoutesChallenge,
+  multiplicationCompleteRobotChallenge,
+  multiplicationVaultChallenge,
   pigeonholeStorageChallenge,
   pigeonholeDistributionChallenge,
   pigeonholeComponentsChallenge,
+  pigeonholeProductionChallenge,
+  pigeonholeCriticalStorageChallenge,
 ] as const;
 
 export type AnyChallengeDefinition = (typeof allChallenges)[number];
@@ -335,6 +549,11 @@ export function getChallengeById(id: ChallengeId): AnyChallengeDefinition | unde
 }
 
 export function getNextChallenge(id: ChallengeId): AnyChallengeDefinition | undefined {
-  const index = allChallenges.findIndex((challenge) => challenge.id === id);
-  return index < 0 ? undefined : allChallenges[index + 1];
+  if (!getChallengeById(id)) return undefined;
+  const slots = sectors.flatMap((sector) => sector.challengeIds);
+  for (const nextId of slots.slice(slots.indexOf(id) + 1)) {
+    const challenge = getChallengeById(nextId);
+    if (challenge) return challenge;
+  }
+  return undefined;
 }
